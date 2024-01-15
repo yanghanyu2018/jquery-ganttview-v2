@@ -1,0 +1,247 @@
+*, *::after, *::before {
+	box-sizing: border-box;  /* !!!非常重要，否则，会造成版面错误 */
+}
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden
+}
+
+		
+div.ganttview-hzheader-month,
+div.ganttview-hzheader-day,
+div.ganttview-vtheader,
+div.ganttview-vtheader-title-name,
+div.ganttview-vtheader-item-name,
+div.ganttview-vtheader-series,
+div.ganttview-grid,
+div.ganttview-grid-row-cell {
+    float: left;
+}
+
+div.ganttview-hzheader-month,
+div.ganttview-hzheader-day {
+    text-align: center;
+}
+
+div.ganttview-grid-row-cell.last,
+div.ganttview-hzheader-day.last,
+div.ganttview-hzheader-month.last {
+    border-right: none;
+}
+
+div.ganttview {
+    border: 1px solid #999;
+}
+
+/* Horizontal Header */
+/*大的框*/
+div.ganttview-hzheader-months,
+div.ganttview-hzheader-weeks,
+div.ganttview-hzheader-days,
+div.ganttview-hzheader-hours {
+    border-bottom: 1px solid #d0d0d0;
+}
+
+/*每一个小框*/
+div.ganttview-hzheader-dow, /*day of week*/
+div.ganttview-hzheader-month,
+div.ganttview-hzheader-week {
+    width: 60px;
+    height: 30px;
+    border-right: 1px solid #d0d0d0;
+    line-height: 30px;
+}
+
+div.ganttview-hzheader-day,
+div.ganttview-hzheader-hour {
+    width: 30px;
+    height: 30px;
+    border-right: 1px solid #f0f0f0;
+    /*border-top: 1px solid #d0d0d0;*/
+    line-height: 30px;
+    color: #777;
+}
+
+div.ganttview-hzheader-hour,.ganttview-hzheader-week{
+    position: relative;
+    box-sizing: initial;
+}
+
+div.ganttview-hzheader-hour-before{
+    background: #EBEBEB
+}
+
+div.ganttview-hzcontent-hour-before{
+    background: #FAFAFA !important
+}
+
+/*当前时间*/
+.ganttview-hzheader-day-now{
+    float:left;
+    width: 20px;
+    height: 18px;
+    border-right: 3px dashed #ec7265;
+    display: inline-block;
+    vertical-align: sub;
+}
+
+/*鼠标选择*/
+div.ganttview-hzcontent-hour-before.ganttview-grid-row-cell-hover{
+    background-color: #f5f5f5 !important
+}
+
+div.ganttview-hzcontent-hour-before.ganttview-grid-row-row-hover{
+    background-color: #f5f5f5 !important
+}
+
+div.ganttview-grid-row-cell-hover{
+    background-color:rgba(210, 232, 232, 0.9) !important
+}
+
+div.ganttview-grid-row-row-hover{
+    background-color: rgba(210, 232, 232, 0.9) !important
+}
+
+div.ganttview-hzheader-day.ganttview-grid-row-row-hover{
+    background-color: rgba(210, 232, 232, 0.9) !important
+}
+
+/*最后的单元*/
+div.ganttview-hzheader-day:last-child,
+div.ganttview-hzheader-hour:last-child {
+    border-right: 1px solid #d0d0d0;
+}
+
+/* Vertical Header */
+
+div.ganttview-vtheader {
+    width: 150px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+div.ganttview-vtheader-title,
+div.ganttview-vtheader-item {
+    overflow: hidden;
+    color: #666;
+}
+
+div.ganttview-vtheader-title-name {
+    text-align: center;
+}
+
+div.ganttview-vtheader-title-name + div.ganttview-vtheader-title-name {
+    border-left: 1px solid #d0d0d0;
+}
+
+div.ganttview-vtheader-item-name {
+    box-sizing: border-box;
+    width: 80px;
+    text-align: center;
+    box-sizing: border-box;
+    /*width: 100px;*/
+    padding: 3px;
+    border-top: 1px solid #d0d0d0;
+    line-height: 16px;
+}
+
+div.ganttview-vtheader-series {
+    width: calc(100% - 80px);
+}
+
+div.ganttview-vtheader-series-name {
+    box-sizing: border-box;
+    width: 100%;
+    border-top: 1px solid #d0d0d0;
+    text-align: center;
+    padding: 3px;
+}
+
+
+/* Slider */
+
+div.ganttview-slide-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-left: 1px solid #999;
+}
+
+
+/* Grid */
+
+div.ganttview-grid-row-cell {
+    width: 30px;
+    height: 31px;
+    border-right: 1px solid #f0f0f0;
+    border-top: 1px solid #f0f0f0;
+}
+
+div.ganttview-grid-row-cell:last-child {
+    border-right: 1px solid #d0d0d0;
+}
+
+div.ganttview-weekend {
+    background-color: #fafafa;
+    color: #FF6666;
+}
+
+div.ganttview-saturday {
+    color: #FF6666;
+    background-color: #fafafa;
+}
+
+div.ganttview-sunday {
+    color: #FF6666;
+    background-color: #f6e7e8;
+}
+
+/* Blocks */
+
+div.ganttview-block-container {
+    height: 24px;
+    padding: 4px 0;
+}
+
+div.ganttview-block {
+    position: relative;
+    height: 24px;
+    background-color: rgba(51, 153, 204, .8);
+    /*border: 1px solid #c0c0c0;*/
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+}
+
+div.ganttview-block-text {
+    box-sizing: border-box;
+    position: absolute;
+    /*height: 24px;*/
+    font-size: 12px;
+    /*line-height: 20px;*/
+    color: #fff;
+    padding: 0px 4px;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/*时间线*/
+div.ganttview-grid-row-cell-line{
+    border-right: 2px solid #A6D7FF;
+    height: 100%;
+    background: #FAFAFA
+}
+
+/* Adjustments for jQuery UI Styling */
+
+div.ganttview-block div.ui-resizable-handle.ui-resizable-s {
+    bottom: 0;
+}
+
+.gantt-drag-hover {
+    background-color: #D7FFF0;
+}
