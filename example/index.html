@@ -3,71 +3,83 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<link rel="stylesheet" type="text/css" href="./css/reset.css" />
-	<link rel="stylesheet" type="text/css" href="../gantt-view-v2.css" />
 	<link rel="stylesheet" type="text/css" href="../lib/jquery-ui-1.13.0.css" />
+	<link rel="stylesheet" type="text/css" href="../gantt-view-v2.css" />
 	<title>jQuery Gantt v2</title>
+
 	<script type="text/javascript" src="./js/jquery.min.js"></script>
 	<script type="text/javascript" src="./js/dateTime.js"></script>
 	<script src="../lib/jquery-ui-1.13.0.js"></script>
 	<script src="../gantt-view-v2.js"></script>
 </head>
 <body>
+<p>
+	<button onclick="refreshMyGanttChart()">刷新甘特图</button>
+</p>
+<div>
 	<div id="ganttChart"></div>
+</div>
 </body>
 <script>
 	var ganttData = [
 		{
-			id: 1, name: "机位1",
+			cId: 1, cName: "机位1",
 			series: [
 			]
 		},
 		{
-			id: 2, name: "机位2", series: [
-				{ name: "计划", start: '2023/01/05', end: '2023/01/20' },
-				{ name: "实际", start: '2023,01/06', end: '2023/01/17' }
+			cId: 2, cName: "机位2", series: [
+				{ sId:21, sName: "计划", start: '2023/01/05', end: '2023/01/20', tasks:[
+						{tId: 211, tName: "计划A", sId:21, start: '2023/01/05', end: '2023/01/07',  options:{draggable:false,resizable:false, color: 'rgba(255, 204, 51, .8)'}},
+						{tId: 212, tName: "计划B", sId:21, start: '2023/01/09', end: '2023/01/10',  options:{}},
+						{tId: 213, tName: "计划C", sId:21, start: '2023/01/11', end: '2023/01/16',  options:{}},
+						{tId: 214, tName: "计划C", sId:21, start: '2023/02/11', end: '2023/02/16',  options:{}},
+						{tId: 215, tName: "计划C", sId:21, start: '2023/03/11', end: '2023/03/16',  options:{}},
+						{tId: 216, tName: "计划C", sId:21, start: '2023/04/11', end: '2023/04/16',  options:{}},
+					] },
+				{ sId:22, sName: "实际", start: '2023,01/06', end: '2023/01/17', isTask: true }
 			]
 		},
 		{
-			id: 3, name: "机位3", series: [
-				{ name: "CA 1234", start: '2023/01/11', end: '2023/01/15', options: {draggable: false, resizable: false, color: 'rgba(153, 204, 51, .8)'}}
+			cId: 3, cName: "机位3", series: [
+				             { sId:31, sName: "CA 1234", start: '2023/01/11', end: '2023/01/15',  options: {draggable: false, resizable: false, color: 'rgba(153, 204, 51, .8)'}}
 			]
 		},
 		{
-			id: 4, name: "机位4", series: [
-				{ name: "CA 2344A/FM 3876", start: '2023/01/01', end: '2023/01/03' }
+			cId: 4, cName: "机位4", series: [
+				{ sId:41, sName: "CA 2344A/FM 3876/MU 3132", start: '2023/01/01', end: '2023/01/03', isTask: true }
 			]
 		},
 		{
-			id: 5, name: "机位5", series: [
-				{ name: "任务1", start: '2023/01/16', end: '2023/01/24' }
+			cId: 5, cName: "机位5", series: [
+				{ sId:51, sName: "任务5", start: '2023/01/16', end: '2023/01/24', isTask: true }
 			]
 		},
 		{
-			id: 6, name: "机位6", series: [
-				{ name: "任务1", start: '2023/01/08', end: '2023/01/17' }
+			cId: 6, cName: "机位6", series: [
+				{ sId:61, sName: "任务6", start: '2023/01/08', end: '2023/01/17', isTask: true }
 			]
 		},
 		{
-			id: 7, name: "机位7", series: [
-				{ name: "任务1", start: '2023/01/25', end: '2023/02/03' }
+			cId: 7, cName: "机位7", series: [
+				{ sId:71, sName: "任务7", start: '2023/01/25', end: '2023/02/03', isTask: true }
 			]
 		},
 		{
-			id: 8, name: "机位8", series: [
-				{ name: "任务1", start: '2023/01/08', end: '2023/01/12' }
+			cId: 8, cName: "机位8", series: [
+				{ sId:81, sName: "任务8", start: '2023/01/08', end: '2023/01/12', isTask: true }
 			]
 		}
 	];
 
-	$("#ganttChart").ganttView({
+	var gantt = $("#ganttChart").ganttView(ganttData, {
 		showWeekends: true,
-		showNowTimeline: false,
-		vtHeaderName: "资源",
+		showNowTimeline: true,
+		multiGantt: true,
+		vtHeaderName: "机位",
 		vtHeaderSubName: "航班",
 		gridHoverV: true,
 		gridHoverH: false,
-		data: ganttData,
 		behavior: {
 			clickable: true,
 			draggable: true,
@@ -81,10 +93,16 @@
 				// console.log(msg);
 			},
 			onDrag: function (data) {
-				// console.log("drag事件","start", data.start.format('yyyy-MM-dd HH:mm:ss'), "end:", data.end.format('yyyy-MM-dd HH:mm:ss'));
+				if (data)
+					console.log("drag事件","start", data.start.format('yyyy-MM-dd HH:mm:ss'), "end:", data.end.format('yyyy-MM-dd HH:mm:ss'));
 			}
 		}
 	});
+
+	function refreshMyGanttChart() {
+		$("#ganttChart").ganttView("refresh");
+	}
+
 </script>
 
 </html>
