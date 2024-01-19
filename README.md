@@ -2,57 +2,38 @@
 
 **基于jQuery的甘特图（GanttView based on jQuery)。**  
 
-**版本支持**：  
+## 技术要求  
 
 1. jQuery 3.0+;
 2. jQuery-ui-1.8+;
-3. 浏览器支持：google chrome, firefox, opera, Microsoft edge 
+3. 高版本的google chrome, firefox, opera, Microsoft edge 
 
-截图
+## 软件示例截图
 
-[https://github.com/yanghanyu2018/jquery-ganttview-v2/blob/main/example/截图2.png]图例
+1. 一行显示一条
+![](https://github.com/yanghanyu2018/jquery-ganttview-v2/blob/main/example/截图1.png)
+
+2. 一行显示多条
 ![](https://github.com/yanghanyu2018/jquery-ganttview-v2/blob/main/example/截图2.png)
 
-## 1.修改说明  
-
-### v0.2.0, 时间：2024.01.19  
-
-  这个版本就是面向实际项目的 α 版本。  
-
-  目前，支持三级模式。我们把三级模式定义为：categories(分类), series(序列）、tasks(任务)，标识分别用cId/cName,sId/sName,tId/tName表示。   
-
-  主要修改：  
-
-1. 重新写了ganttView的数据结构。
-2. 在加载时，把数据和options区分开来。
-3. 增加了拖拽功能。
-4. 增加了对于多任务模式的支持。
-5. 增加了对甘特图的刷新。
-6. 对css进行了部分增加。
+3. 多种模式：day模式+hour模式
+![](https://github.com/yanghanyu2018/jquery-ganttview-v2/blob/main/example/截图3.png)
 
 
-
-### v0.1.0, 时间：2024.01.16  
-
-  基于网上的ganttView进行修改。可以作为一个简单的版本进行学习。  
-
-  主要原因是：网上发现的几个gantt图工具，都太复杂。比较中意这ganttView，但原来版本是14年前的东西（估计那个时候还在兼容IE6），现在已经不支持高版本的jquery和jquery-ui，无法在现在的工程项目中使用。
-
-  ganttView是一个非常轻量级的甘特图程序，但在网上找了几个版本，发现国内基于ganttView修改的几个版本都是错误百出（也许是一些大学生在基本掌握了Javascript的情况下进行的修改）。于是下决心在原来框架基础上重新整理一个新的版本，并在原版本上增加了一些功能。未来准备在这个基础上，开发多任务的甘特图，具体场景有：同一资源在不同时间段的使用情况。
-
-
-1. 目前的版本，仅支持day的方式显示，后续会修改。
-2. 准备在此基础上，增加一个多任务条的版本，并实现month/week/day/hour几种方式的显示和处理。
-3. 目前，对于当前时间线的显示，还仅是静态方式。
-4. 作为一个基础版本，几百行程序，注解都有了，大家可以根据需要进行修改。
-
-
-## 2.如何使用
+## 如何使用
 在html中，设置`<div>`
 
-```
-	<div>id="ganttChart"</div>
-```
+
+	<html>
+	...
+    <body>
+    	...
+		<div>id="ganttChart"</div>
+	</body>
+	...
+	</html>
+
+
 
 在`<script>`中设置
 
@@ -62,6 +43,7 @@
 	];
 
 	var gantt = $("#ganttChart").ganttView(ganttData, {
+		viewMode: 'day',
 		showWeekends: true,
 		showNowTimeline: true,
 		multiGantt: true,
@@ -82,18 +64,18 @@
 				// console.log(msg);
 			},
 			onDrag: function (data) {
-				if (data)
-					console.log("drag事件","start", data.start.format('yyyy-MM-dd HH:mm:ss'), "end:", data.end.format('yyyy-MM-dd HH:mm:ss'));
+				// var msg = "drag事件:" + JSON.stringify(data);
+				// console.log(msg);
 			}
 		}
 	});
 
 	function refreshMyGanttChart() {
-		$("#ganttChart").ganttView("refresh");
+		gantt.ganttView.reloadGantts();
 	}
 
 
-## 3.数据格式
+## 数据格式
 
 data的格式如下：
 
@@ -139,11 +121,55 @@ data的格式如下：
 		// 下一条category
 	]
 
+## 修改说明  
 
-## 4.技术联系
+
+### v0.3.0, 时间：2024.01.20  
+
+
+  主要修改：  
+
+1. 增加了hour模式。
+2. 在一个页面可以显示多个甘特图。
+3. 两个gantt图之间完全独立。
+
+
+### v0.2.0, 时间：2024.01.19  
+
+  这个版本就是面向实际项目的 α 版本。  
+
+  目前，支持三级模式。我们把三级模式定义为：categories(分类), series(序列）、tasks(任务)，标识分别用cId/cName,sId/sName,tId/tName表示。   
+
+  主要修改：  
+
+1. 重新写了ganttView的数据结构。
+2. 在加载时，把数据和options区分开来。
+3. 增加了拖拽功能。
+4. 增加了对于多任务模式的支持。
+5. 增加了对甘特图的刷新。
+6. 对css进行了部分增加。
+
+
+
+### v0.1.0, 时间：2024.01.16  
+
+  基于网上的ganttView进行修改。可以作为一个简单的版本进行学习。  
+
+  主要原因是：网上发现的几个gantt图工具，都太复杂。比较中意这ganttView，但原来版本是14年前的东西（估计那个时候还在兼容IE6），现在已经不支持高版本的jquery和jquery-ui，无法在现在的工程项目中使用。
+
+  ganttView是一个非常轻量级的甘特图程序，但在网上找了几个版本，要么非常复杂，要么错误百出。于是下决心在原ganttView基础上重新整理一个新的版本，并在原版本上增加了一些功能。
+
+
+1. 目前的版本，仅支持day的方式显示，后续会修改。
+2. 准备在此基础上，增加一个多任务条的版本。
+3. 目前，对于当前时间线的显示，还仅是静态方式。
+4. 作为一个基础版本，仅几百行程序，注解都有，大家可以根据需要进行修改。
+
+
+## 技术联系
 Jack Yang <jackyhy@263.net>
 
 
-## 5.许可
+## 许可
 
 MIT

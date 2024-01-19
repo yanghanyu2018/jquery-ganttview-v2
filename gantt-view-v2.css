@@ -10,9 +10,14 @@
     visibility: hidden
 }
 
+div.ganttview {
+    border: 1px solid #999;
+}
 
+div.ganttview-hzheader-dayofweek,
 div.ganttview-hzheader-month,
 div.ganttview-hzheader-day,
+div.ganttview-hzheader-hour,
 div.ganttview-vtheader,
 div.ganttview-vtheader-title-name,
 div.ganttview-vtheader-item-name,
@@ -22,77 +27,55 @@ div.ganttview-grid-row-cell {
     float: left;
 }
 
+div.ganttview-hzheader-dayofweek,
 div.ganttview-hzheader-month,
-div.ganttview-hzheader-day {
+div.ganttview-hzheader-day,
+div.ganttview-hzheader-hour {
     text-align: center;
-}
-
-div.ganttview {
-    border: 1px solid #999;
 }
 
 /* Horizontal Header */
 /*大的框*/
+div.ganttview-hzheader-dayofweeks,
 div.ganttview-hzheader-months,
-div.ganttview-hzheader-weeks,
 div.ganttview-hzheader-days,
 div.ganttview-hzheader-hours {
     border-bottom: 1px solid #d0d0d0;
 }
 
 /*每一个小框*/
-div.ganttview-hzheader-dow, /*day of week*/
-div.ganttview-hzheader-month,
-div.ganttview-hzheader-week {
+div.ganttview-hzheader-hour {
     width: 60px;
     height: 30px;
     border-right: 1px solid #d0d0d0;
     line-height: 30px;
 }
 
-div.ganttview-hzheader-day,
-div.ganttview-hzheader-hour {
+div.ganttview-hzheader-dayofweek,
+div.ganttview-hzheader-month,
+div.ganttview-hzheader-day {
     width: 30px;
     height: 30px;
-    border-right: 1px solid #f0f0f0;
+    border-right: 1px solid #e0e0e0;
     /*border-top: 1px solid #d0d0d0;*/
     line-height: 30px;
     color: #777;
 }
 
-div.ganttview-hzheader-hour,.ganttview-hzheader-week{
-    position: relative;
-    box-sizing: initial;
-}
-
-div.ganttview-hzheader-hour-before{
-    background: #EBEBEB
-}
-
-div.ganttview-hzcontent-hour-before{
-    background: #FAFAFA !important
-}
-
 /*当前时间*/
-.ganttview-hzheader-day-now{
+.ganttview-grid-row-cell-now,
+.ganttview-hzheader-day-now,
+.ganttview-hzheader-hour-now{
     float:left;
-    width: 1px;
+    width: 2px;
     height: 26px;
     border-right: 2px dashed rgba(243, 4, 70, 0.8);
     display: inline-block;
     vertical-align: sub;
     position: relative;
+    z-index: 20;
 }
-
 /*鼠标选择*/
-div.ganttview-hzcontent-hour-before.ganttview-grid-row-cell-hover{
-    background-color: #f5f5f5 !important
-}
-
-div.ganttview-hzcontent-hour-before.ganttview-grid-row-row-hover{
-    background-color: #f5f5f5 !important
-}
-
 div.ganttview-grid-row-cell-hover{
     /*background-color:rgba(210, 232, 232, 0.9) !important*/
     background-color: #FAFAFA !important
@@ -103,7 +86,8 @@ div.ganttview-grid-row-row-hover{
     background-color: #FAFAFA !important
 }
 
-div.ganttview-hzheader-day.ganttview-grid-row-row-hover{
+div.ganttview-hzheader-day.ganttview-grid-row-row-hover,
+div.ganttview-hzheader-hour.ganttview-grid-row-row-hover{
     background-color: rgba(210, 232, 232, 0.9) !important
 }
 
@@ -144,7 +128,6 @@ div.ganttview-vtheader-item-name {
     box-sizing: border-box;
     width: 80px;
     text-align: center;
-    /*width: 100px;*/
     padding: 3px;
     border-top: 1px solid #d0d0d0;
     /*border-right: 1px solid #d0d0d0;*/
@@ -189,8 +172,8 @@ div.ganttview-slide-container {
 div.ganttview-grid-row-cell {
     width: 30px;
     height: 31px;
-    border-right: 1px solid #f0f0f0;
-    border-top: 1px solid #f0f0f0;
+    border-right: 1px solid #e0e0e0;
+    border-top: 1px solid #e0e0e0;
 }
 
 div.ganttview-grid-row-cell:last-child {
@@ -233,6 +216,10 @@ div.ganttview-block {
     -webkit-border-radius: 3px;
 }
 
+div.ganttview-block.gannttview-block-selected {
+    background-color: rgba(220, 174, 189, 0.8);
+}
+
 /* bar 文字*/
 div.ganttview-block-text {
     box-sizing: border-box;
@@ -247,68 +234,14 @@ div.ganttview-block-text {
     user-select: none;
 }
 
-.ganttview-block-text-blue{
-    background-color: #DBEFFF !important;
-}
-.ganttview-block-text-yellow{
-    background-color: #FFE2E2 !important;
-}
-.ganttview-block-text-green{
-    background-color: #DEF9F1 !important;
-}
-.ganttview-block-text-gray{
-    background-color: #EBEBEB !important;
-}
-.ganttview-block-text-blue:hover{
-    box-shadow: 0px 2px 4px #6EA8DC;
-}
-.ganttview-block-text-yellow:hover{
-    box-shadow: 0px 2px 4px #FDAFB9;
-}
-.ganttview-block-text-green:hover{
-    box-shadow: 0px 2px 4px #78e0c4
-}
-.ganttview-block-text-gray:hover{
-    box-shadow: 0px 2px 4px #a2a2a2
-}
-
-div.ganttview-block.ganttview-block-readOnly {
-    background-color: #f5f5f5
-}
-
 div.ganttview-block.ganttview-block-more {
     margin-top: -22px !important;
     /*z-index: 22;*/
 }
 
-/*bar图标*/
-.gattview-icon-box{
-    height: 100%;
-    position: absolute;
-    left: -23px;
-    width: auto;
-}
-
-.ganttview-block-icon{
-    width:18px;
-    height:18px;
-    border-radius:2px;
-    display: inline-block;
-    color: white;
-    text-align: center;
-    line-height: 19px;
-    margin-top: 3px;
-}
 /*甘特条*/
 div.ganttview-block.ganttview-task {
     border: 1px dashed rgba(243, 6, 6, 0.5);
-}
-
-/*时间线*/
-div.ganttview-grid-row-cell-line{
-    border-right: 2px solid #A6D7FF;
-    height: 100%;
-    background: #FAFAFA
 }
 
 /* Adjustments for jQuery UI Styling */
