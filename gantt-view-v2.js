@@ -1,26 +1,33 @@
 /*
-Original from jQuery.ganttView v.0.8.8
-Copyright (c) 2010 JC Grubbs - jc.grubbs@devmynd.com
-MIT License Applies
+    Original from jQuery.ganttView v.0.8.8
+    Copyright (c) 2010 JC Grubbs - jc.grubbs@devmynd.com
+    MIT License Applies
 
-Modified by: Jack Yang, 2024.1
-Modified:
-1) Change to support stacked tasks.
-2) Support now-time line
-3) Support day/hour mode
-4) Support JQuery 3.0+ and need jquery-ui-1.13+ to implement drag functions
-5)
+    Modified by: Jack Yang, 2024.1
+    Modified:
+    1) Change to support stacked tasks.
+    2) Support now-time line
+    3) Support day/hour mode
+    4) Support JQuery 3.0+ and need jquery-ui-1.13+ to implement drag functions
 */
 
-/*
-// 数据三级名称：categories (cId) , series (sId), tasks (tId)
-data: object
-    格式：[
+
+/***********************************************************************************************************************
+ // 数据三级名称：
+ // categories (cId) 分类
+ // series (sId)     序列
+ // tasks (tId)      任务
+ // 例如：机场的登机门/当前航班/航班任务，构成三级
+
+ data: object
+ 格式：
+ [
     {
-        cId: 2, cName: "资源A", series: [
+        cId: 2, cName: "资源A", tip:"显示信息", series: [
             {
                 sId: 1,
                 sName: "任务1",
+                tip: "显示任务1的提示",
                 start: '2018/01/05', // 总任务开始，时间格式
                 end: '2018/01/20',   // 总任务结束，时间格式
                 isTask: true,        // 是否任务，如果是任务的话，则可以拖拽
@@ -29,55 +36,98 @@ data: object
                         tId: 11,           // 子任务id
                         sId: 1,           // 应与上级sId相同
                         tName: "任务1-1",
+                        tip: "显示任务1-1",
                         start: '2018/01/05', // 时间格式
                         end: '2018/01/20',   // 时间格式
                         isTask: true,        // 是否是任务
-                        options:{ // 为这条任务的配置
-                            resizable?:boolean, // default:true
-                            draggable?:boolean, // default:true
-                            color?: string
+                        options: { // 为这条任务的配置
+                            resizable: boolean, // default:true
+                            draggable: boolean, // default:true
+                            color: string
                         }
                     },
                     // 其它子任务
-                    ...
+                    // ...
                 ],
                 options:{ // 如果使用此总bar，则以下有效
-                    resizable?:boolean, // default:true
-                    draggable?:boolean, // default:true
-                    color?: string
+                    resizable:boolean, // default:true
+                    draggable:boolean, // default:true
+                    color: string
                 }
-             },
+            },
+
             // 任务2
-             ...
+            // ...
+        ],
+    },
+]
+
+Example:
+
+var ganttData = [
+    {
+        cId: 1, cName: "GATE1",
+        series: [
         ]
-    }]
+    },
+    {
+        cId: 2, cName: "GATE2", series: [
+            { sId:21, sName: "计划", start: '2023/01/05', end: '2023/01/20', tasks:[
+                    {tId: 211, tName: "计划A", sId:21, start: '2023/01/05', end: '2023/01/07',  options:{draggable:false,resizable:false, color: 'rgba(255, 204, 51, .8)'}},
+                    {tId: 212, tName: "计划B", sId:21, start: '2023/01/09', end: '2023/01/10',  options:{}},
+                    {tId: 213, tName: "计划C", sId:21, start: '2023/01/11', end: '2023/01/16',  options:{}},
+                    {tId: 214, tName: "计划C", sId:21, start: '2023/02/11', end: '2023/02/16',  options:{}},
+                    {tId: 215, tName: "计划C", sId:21, start: '2023/03/11', end: '2023/03/16',  options:{}},
+                    {tId: 216, tName: "计划C", sId:21, start: '2023/04/11', end: '2023/04/16',  options:{}},
+                ] },
+            { sId:22, sName: "实际", start: '2023/01/06', end: '2023/01/17', isTask: true }
+        ]
+    },
+    {
+        cId: 3, cName: "GATE3", series: [
+            { sId:31, sName: "CA 1234", start: '2023/01/11', end: '2023/01/15',  options: {draggable: false, resizable: false, color: 'rgba(153, 204, 51, .8)'}}
+        ]
+    },
+    {
+        cId: 4, cName: "GATE4", series: [
+            { sId:41, sName: "CA 2344A/FM 3876/MU 3132", start: '2023/01/01', end: '2023/01/03', isTask: true }
+        ]
+    },
+    {
+        cId: 5, cName: "GATE5", series: [
+            { sId:51, sName: "任务5", start: '2023/01/16', end: '2023/01/24', isTask: true }
+        ]
+    },
+];
 
-Options
------------------
-showWeekends: boolean  // 显示周末
-showNowTimeline: boolean   // 显示当期时间线
-viewMode: string     // month/week/day
-multiGantt: true,  // true: 一行多任务,  false: 一行单任务
-dataUrl: string, // json数据url
-cellWidth: number, default: 30
-cellHeight: number, default: 30
-vtHeaderWidth: number, default: 100,
-vtHeaderName: string, default: "名称",
-vtHeaderSubName: string, default: "任务"
-gridHoverV: true,//是否鼠标移入效果(列)
-gridHoverH: true,//是否鼠标移入效果(行)
+ Options
+ -----------------
+ showWeekends: boolean  // 显示周末
+ showNowTimeline: boolean   // 显示当期时间线
+ viewMode: string     // month/week/day
+ multiGantt: true,  // true: 一行多任务,  false: 一行单任务
+ dataUrl: string, // json数据url
+ cellWidth: number, default: 30
+ cellHeight: number, default: 30
+ vtHeaderWidth: number, default: 100,
+ vtHeaderName: string, default: "名称",
+ vtHeaderSubName: string, default: "任务"
+ gridHoverV: true,//是否鼠标移入效果(列)
+ gridHoverH: true,//是否鼠标移入效果(行)
 
-behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，则单条配置会失效
-	clickable: boolean,
-	draggable: boolean,
-	resizable: boolean,
-	onClick: function,
-	onDrag: function,
-	onResize: function
-}
-*/
+ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，则单条配置会失效
+ clickable: boolean,
+ draggable: boolean,
+ resizable: boolean,
+ onClick: function,
+ onDrag: function,
+ onResize: function
+ }
+ ***********************************************************************************************************************/
 
 (function ($) {
+    'use strict';
+
     if (typeof $.fn.ganttView !== 'undefined') {
         return;
     }
@@ -93,7 +143,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
         multiGantt: false,       // true: 一行多任务,  false: 一行单任务
         showWeekends: true,
         showNowTimeline: false,
-        baseToday: false,      // 时间是否包括当日
+        baseToday: false,        // 时间是否包括当日
         showDayOfWeek: true,     // 显示星期，仅在day模式下有效
         cellWidth: 40,           // 单元格宽度
         cellHeight: 30,          // 单元格高度
@@ -160,6 +210,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
                             cId: category.cId,
                             sId: Math.floor((Math.random() + 1) * 1000000),
                             sName: '暂无任务',
+                            tip:'Empty Tasks',
                             _empty: true,
                             tasks: [],
                         }];
@@ -182,6 +233,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
                                     sId: serie.sId,
                                     cId: category.cId,
                                     tName: serie.sName + Math.floor((Math.random() + 1) * 1000), // 随机名称
+                                    tip: serie.tip,
                                     start: serie.start,
                                     end: serie.end,
                                     isTask: true, // 确定任务
@@ -253,8 +305,8 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
 
             let i = 0, j = 0;
             for (let category of categories) {
-                for (let serie of category.series) {
-                    for (let task of serie.tasks) {
+                for (let serie of (category.series || [])) {
+                    for (let task of (serie.tasks || [])) {
                         if (!task.start || !task.end) {
                             continue;
                         }
@@ -290,25 +342,166 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
             }
         }
 
-        function addGantt() {
-            // 测试用途
-            let serie = _ganttChart.findSerie(1, 21);
-            if (serie) _ganttChart.newGantt(serie);
+
+        function addGantt(cId, sId) {
+            let serie = _ganttChart.findSerie(cId, sId);
+            if (serie) {
+                let _newSerie = $.extend(true, {}, serie);
+                _ganttChart.addGantt(_newSerie, {});
+            } else {
+                let _newSerie = {
+                    sId: sId,
+                    sName: "No Name",
+                }
+                _ganttChart.addGantt(_newSerie, {});
+            }
         }
 
-        function deleteGantt() {
-            if (_ganttChart.selectedBlock) {
-                _ganttChart.deleteGanttBlock(_ganttChart.selectedBlock);
+        function deleteGantt(cId, sId) {
+            if (!cId && !sId) {
+                if (_ganttChart.selectedBlock) {
+                    _ganttChart.deleteGanttBlock(_ganttChart.selectedBlock);
+                }
+                return
             }
+            let gantt = _ganttChart.findSerie(cId, sId)
+            if (gantt) {
+                _ganttChart.deleteGanttBlock(gantt);
+            }
+
+        }
+
+        function clearGantts() {
+            for (let category of _ganttDataset) {
+                category.series = []
+            }
+        }
+
+
+        //----------------------------------------对数据的操作-----------------------------------------------------------
+        // 对数据的操作
+        function findCategory(cId) {
+            for (let category of _ganttDataset) {
+                if (category.cId == cId) {
+                    return category
+                }
+            }
+            return null
+        }
+
+        function deleteCategory(cId) {
+            let found;
+            for (let i = 0; i < _ganttDataset.length; i++) {
+                if (_ganttDataset[i] && _ganttDataset[i].cId == cId) {
+                    found = i
+                    break;
+                }
+            }
+            _ganttDataset.splice(i,1)
+            return null
+        }
+
+        function addCategory(cId, cName) {
+            let gantt = findCategory(cId);
+            if (!gantt) {
+                gantt = {
+                    cId : cId,
+                    cName: cName || "No Name",
+                    tip : 'No Name',
+                    series: [],
+                }
+                _ganttDataset.push(gantt);
+            } else {
+                gantt.cName = cName
+            }
+        }
+
+        function findSerie(_cat, _serie) {
+            let obj = null;
+            let sId = ''
+            if (typeof _serie === "object") {
+                sId = _serie.sId || ''
+            }
+
+            if (typeof _cat === "object") {
+                for (let serie of (_cat.series || [])) {
+                    if (serie.sId == sId) {
+                        obj = serie;
+                        break;
+                    }
+                }
+            } else {
+                for (let category of _ganttDataset) {
+                    if (category.cId == _cat) {
+                        for (let serie of category.series) {
+                            if (serie.sId == sId) {
+                                obj = serie;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return obj;
+        }
+
+        function addSerie(_cat, _serie) {
+            if (!_cat) return;
+            if (typeof _cat !== "object") {
+                _cat = findCategory(_cat)
+                if (!_cat) return;
+            }
+            _cat.series = _cat.series || []
+            _cat.series.push(_serie)
+        }
+
+        function deleteSerie(_cat, _serie) {
+            let sId = ''
+            if (typeof _serie === "object") {
+                sId = _serie.sId || ''
+            }
+
+            if (typeof _cat !== "object") {
+                _cat = findCategory(_cat)
+                if (!_cat) return;
+            }
+
+            let found ;
+            _cat.series = _cat.series || []
+            for (let i = 0; i < _cat.series.length; i++) {
+                if (_cat.series[i].sId == sId) {
+                    found = i;
+                    break;
+                }
+            }
+            if (found) {
+                _cat.series.splice(found, 1)
+            }
+        }
+
+        //-----------------------------------------END:对数据的操作-------------------------------------------------------
+
+        function gotoNow() {
+            _ganttChart.gotoNow()
         }
 
         $thisView.ganttView =  {
             ganttChart: _ganttChart,
             ganttBehavior: _ganttBehavior,
+
+            clearGantts: clearGantts,
             reloadGantts: reloadGantts,
             addGantt: addGantt,
             deleteGantt: deleteGantt,
             build: build,
+            gotoNow: gotoNow,
+
+            findCategory: findCategory,
+            addCategory: addCategory,
+            deleteCategory: deleteCategory,
+            findSerie: findSerie,
+            addSerie: addSerie,
+            deleteSerie: deleteSerie,
         }
 
         return $thisView;
@@ -356,8 +549,35 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
             }
         }
 
-        function showNowTimeLineInCell() {
+        function gotoNow() {
+            let __scrollTopFound = function(tdObj, showTop) {
+                if (tdObj) {
+                    if (typeof showTop !== "undefined") {
+                        tdObj.scrollIntoView(showTop)
+                    } else {
+                        tdObj.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                            inline: "center",
+                        })
+                    }
+                }
+            }
 
+            let $obj;
+
+            if (opts.viewMode === 'hour') {
+                $obj = $(".ganttview-hzheader-hour-now")
+            } else {
+                $obj = $(".ganttview-hzheader-day-now")
+            }
+
+            if ($obj && $obj.length>0) {
+                __scrollTopFound($obj[0])
+            }
+        }
+
+        function showNowTimeLineInCell() {
             let _now = new Date()
             if (_now < opts.start || _now > opts.end) {
                 return
@@ -491,7 +711,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
                 // 左边标题栏项目
                 let itemDiv = $("<div>", {
                     "id": "ganttview-vtheader-item-" + category.cId,
-                    "title": category.cName,
+                    "title": (category.tip || category.cName),
                     "class": "ganttview-vtheader-item",
                     "css": {"height": (category.series.length * _opts.cellHeight) + "px"}
                 });
@@ -513,7 +733,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
                     seriesDiv.append($("<div>", {
                         "id": "ganttview-vtheader-series-name-" + serie.sId,
                         "class": "ganttview-vtheader-series-name",
-                        "title": serie.sName,
+                        "title": (serie.tip || serie.sName),
                         "css": {"height": _opts.cellHeight + "px", "line-height": _opts.cellHeight - 6 + "px"}
                     }).append(serie.sName));
                 }
@@ -798,8 +1018,10 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
 
                                 task.cId = newCategory.cId;
                                 task.sId = newSerie.sId;
-                                if (newSerie.sName === "暂无任务" && task.tName)
+                                if (newSerie.sName === "暂无任务" && task.tName) {
                                     newSerie.sName = task.tName;
+                                    newSerie.tip = task.tip;
+                                }
 
                                 newSerie.tasks.push(task);
                                 updateBlockData($block, category, newSerie, task);
@@ -860,7 +1082,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
 
                     // 对每个gantt条数据进行处理
                     let _count = 0
-                    for (let task of serie.tasks) {
+                    for (let task of (serie.tasks || [])) {
                         _count++;
 
                         if (_opts.viewMode === 'hour') {
@@ -872,7 +1094,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
                             let block = $("<div>", {
                                 "id": "ganttview-block-" + task.tId,
                                 "class": "ganttview-block",
-                                "title": `${category.cName}: ${serie.sName}: ${task.tName}  任务时间: [${task.start.format("dd HH:mm")} -- ${task.end.format("dd HH:mm")}]`,
+                                "title": (task.tip?task.tip: `${category.cName}: ${serie.sName}: ${task.tName}  任务时间: [${task.start.format("dd HH:mm")} -- ${task.end.format("dd HH:mm")}]`),
                                 "css": {
                                     "width": size + "px", // 甘特条宽度, 显示整天时，不精确定位小时
                                     "height": _opts.cellHeight - CONST_CELL_HGT_RESERVED + "px",  // 甘特条高度
@@ -912,7 +1134,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
                             let block = $("<div>", {
                                 "id": "ganttview-block-" + task.tId,
                                 "class": "ganttview-block",
-                                "title": `${category.cName}: ${serie.sName}: ${task.tName}  任务时间: [${task.start.format("dd HH:mm")} -- ${task.end.format("dd HH:mm")}]`,
+                                "title": (task.tip?task.tip: `${category.cName}: ${serie.sName}: ${task.tName}  任务时间: [${task.start.format("dd HH:mm")} -- ${task.end.format("dd HH:mm")}]`),
                                 "css": {
                                     "width": ((size * _opts.cellWidth) - CONST_CELL_HGT_RESERVED) + "px", // 甘特条宽度, 显示整天时，不精确定位小时
                                     "height": _opts.cellHeight - CONST_CELL_HGT_RESERVED + "px",  // 甘特条高度
@@ -1013,7 +1235,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
 
         function findTaskIdx(tasks, cId, sId) {
             let i = 0;
-            for (let task of tasks) {
+            for (let task of (tasks||[])) {
                 if (task.sId == sId && task.cId == cId) {
                     return i;
                 }
@@ -1024,7 +1246,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
 
         function findCategory(cId) {
             let obj = null;
-            for (let category of categories) {
+            for (let category of (categories || [])) {
                 if (category.cId == cId) {
                     obj = category;
                     break;
@@ -1033,14 +1255,28 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
             return obj;
         }
 
-        function findSerie(cId, sId) {
+        function findSerie(_cat, _serie) {
             let obj = null;
-            for (let category of categories) {
-                if (category.cId == cId) {
-                    for (let serie of category.series) {
-                        if (serie.sId == sId) {
-                            obj = serie;
-                            break;
+            let sId = ''
+            if (typeof _serie === "object") {
+                sId = _serie.sId || ''
+            }
+
+            if (typeof _cat === "object") {
+                for (let serie of (_cat.series || [])) {
+                    if (serie.sId == sId) {
+                        obj = serie;
+                        break;
+                    }
+                }
+            } else {
+                for (let category of categories) {
+                    if (category.cId == _cat) {
+                        for (let serie of category.series) {
+                            if (serie.sId == sId) {
+                                obj = serie;
+                                break;
+                            }
                         }
                     }
                 }
@@ -1048,13 +1284,47 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
             return obj;
         }
 
+        function addSerie(_cat, _serie) {
+            if (!_cat) return;
+            if (typeof _cat !== "object") {
+                _cat = findCategory(_cat)
+                if (!_cat) return;
+            }
+            _cat.series = _cat.series || []
+            _cat.series.push(_serie)
+        }
+
+        function deleteSerie(_cat, _serie) {
+            let sId = ''
+            if (typeof _serie === "object") {
+                sId = _serie.sId || ''
+            }
+
+            if (typeof _cat !== "object") {
+                _cat = findCategory(_cat)
+                if (!_cat) return;
+            }
+
+            let found ;
+            _cat.series = _cat.series || []
+            for (let i = 0; i < _cat.series.length; i++) {
+                if (_cat.series[i].sId == sId) {
+                    found = i;
+                    break;
+                }
+            }
+            if (found) {
+                _cat.series.splice(found, 1)
+            }
+        }
+
         function findTask(cId, sId, tId) {
             let obj = null;
-            for (let category of categories) {
+            for (let category of (categories || [])) {
                 if (category.cId === cId) {
                     for (let serie of category.series) {
                         if (serie.sId === sId) {
-                            for (let task of serie.tasks) {
+                            for (let task of (serie.tasks||[])) {
                                 if (task.tId === tId) {
                                     obj = task;
                                     break;
@@ -1078,6 +1348,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
             serie._empty = (serie.tasks.length <= 0);
             if (serie._empty) {
                 serie.sName = "暂无任务";
+                serie.tip = "暂无任务";
                 serie.start = null;
                 serie.end = null;
             }
@@ -1099,6 +1370,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
             serie.tasks = []
             serie._empty = true;
             serie.sName = "暂无任务";
+            serie.tip = "暂无任务";
             serie.start = null;
             serie.end = null;
             return false;
@@ -1134,7 +1406,7 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
                     "margin-left": ((offset * opts.cellWidth) + CONST_DAY_LEFT_MARGIN) + "px",
                 });
 
-                blockDiv.attr("title", Utils.getTitle(data.sName, data.count));
+                blockDiv.attr("title", Utils.getTitle((data.tip || data.sName), data.count));
             }
         }
 
@@ -1187,27 +1459,40 @@ behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，�
                 $selectedBlock = null;
         }
 
-        // 新建甘特图
-        function newGantt(serie) {
+        // 添加甘特图
+        function addGantt(serie, task) {
             // TODO:
         }
 
-        // 添加甘特图
-        function addGantt(serie, task) {
+        function findGantt(cId, sId) {
+            // TODO:
+        }
+
+        function addTask(serie, task) {
+            // TODO:
+        }
+
+        function deleteTask(serie, task) {
             // TODO:
         }
 
         return {
             selectedBlock: $selectedBlock,
             selectedBlockOld: $selectedBlockOld,
+
             refreshGanttBlock: refreshGanttBlock,
             deleteGanttBlock: deleteGanttBlock,
             addGantt: addGantt,
-            newGantt: newGantt,
+            findGantt: findGantt,
+            addTask: addTask,
+            deleteTask: deleteTask,
             findTask: findTask,
             findSerie: findSerie,
+            addSerie: addSerie,
+            deleteSerie: deleteSerie,
             findCategory: findCategory,
-            render: render
+            render: render,
+            gotoNow: gotoNow,
         };
     }
 

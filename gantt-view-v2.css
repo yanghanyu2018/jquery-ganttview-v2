@@ -67,9 +67,12 @@ div.ganttview-hzheader-day {
 .ganttview-hzheader-day-now,
 .ganttview-hzheader-hour-now{
     float:left;
-    width: 2px;
+    width: 1px;
     height: 26px;
-    border-right: 2px dashed rgba(243, 4, 70, 0.8);
+    border-left: 0;
+    border-top: 0;
+    border-bottom: 0;
+    border-right: 2px dashed rgba(246, 181, 181, 0.8);
     display: inline-block;
     vertical-align: sub;
     position: relative;
