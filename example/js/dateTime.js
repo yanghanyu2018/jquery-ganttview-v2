@@ -271,6 +271,31 @@ function getDaysBetween(startDate, enDate) {
     return days
 }
 
+function datetime_hhmm_base(d_time, base_time) {
+    if (!d_time) return ""
+    if (!base_time) base_time = d_time
+
+    let dd = new Date(d_time)
+    let time_short = dd.format("HH:mm")
+    let time_date_str = new Date(d_time).format("yyyy-MM-dd")
+
+    let time_date = new Date(time_date_str)
+    let base_date = new Date(base_time)
+    let d = getDaysBetween(base_date, time_date)
+    if (d > 0) {
+        if (d > 9)
+            time_short = time_short + '+*'
+        else
+            time_short = time_short + '+' + d
+    } else if (d < 0) {
+        if (d < -9)
+            time_short = time_short + '-*'
+        else
+            time_short = time_short + '-' + Math.abs(d)
+    }
+    return time_short
+}
+
 function time14_hhmm_base(time14, base_time14) {
     if (!time14) return ""
     if (!base_time14) base_time = time14
