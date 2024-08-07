@@ -102,26 +102,26 @@ var ganttData = [
 
  Options
  -----------------
- showWeekends: boolean  // 显示周末
- showNowTimeline: boolean   // 显示当期时间线
- viewMode: string     // month/week/day
- multiGantt: true,  // true: 一行多任务,  false: 一行单任务
- dataUrl: string, // json数据url
- cellWidth: number, default: 30
- cellHeight: number, default: 30
- vtHeaderWidth: number, default: 100,
- vtHeaderName: string, default: "名称",
- vtHeaderSubName: string, default: "任务"
- gridHoverV: true,//是否鼠标移入效果(列)
- gridHoverH: true,//是否鼠标移入效果(行)
+     showWeekends: boolean  // 显示周末
+     showNowTimeline: boolean   // 显示当期时间线
+     viewMode: string     // month/week/day
+     multiGantt: true,  // true: 一行多任务,  false: 一行单任务
+     dataUrl: string, // json数据url
+     cellWidth: number, default: 30
+     cellHeight: number, default: 30
+     vtHeaderWidth: number, default: 100,
+     vtHeaderName: string, default: "名称",
+     vtHeaderSubName: string, default: "任务"
+     gridHoverV: true,//是否鼠标移入效果(列)
+     gridHoverH: true,//是否鼠标移入效果(行)
 
- behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，则单条配置会失效
- clickable: boolean,
- draggable: boolean,
- resizable: boolean,
- onClick: function,
- onDrag: function,
- onResize: function
+     behavior: { // 整体配置， 如果整体设置不能拖拽、改变大小，则单条配置会失效
+     clickable: boolean,
+     draggable: boolean,
+     resizable: boolean,
+     onClick: function,
+     onDrag: function,
+     onResize: function
  }
  ***********************************************************************************************************************/
 
@@ -153,6 +153,25 @@ var ganttData = [
         dataUrl: null,           // 数据url
         gridHoverV: true,        // 是否鼠标移入效果(列)
         gridHoverH: false,       // 是否鼠标移入效果(行)
+        weekStart: 1,  // 星期开始，0--星期天
+        currentLanguage: {
+            day_short: [
+                "1日", "2日", "3日", "4日", "5日", "6日", "7日", "8日", "9日", "10日", "11日", "12日",
+                "13日", "14日", "15日", "16日", "17日", "18日", "19日", "20日", "21日", "22日", "23日", "24日",
+                "25日", "26日", "27日", "28日", "29日", "30日", "31日"
+            ],
+            day_full: [
+                "01日", "02日", "03日", "04日", "05日", "06日", "07日", "08日", "09日", "10日", "11日", "12日",
+                "13日", "14日", "15日", "16日", "17日", "18日", "19日", "20日", "21日", "22日", "23日", "24日",
+                "25日", "26日", "27日", "28日", "29日", "30日", "31日"
+            ],
+            month_short: [
+                "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"
+            ],
+            month_full: [
+                "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"
+            ],
+        },    // 当前语种
         behavior: {
             clickable: true,
             draggable: true,
@@ -162,7 +181,7 @@ var ganttData = [
 
     $.fn.ganttView = function (data, options) {
         // jQuery对象
-        let $thisView = this;
+        let _$thisView = this;
 
         // 选项和数据
         let _ganttOpts = {};
@@ -173,15 +192,16 @@ var ganttData = [
         let _ganttBehavior = null;
 
         // 进行初始化，第一个对象为数据，第二个为options
-        build(false, data, options);
+        _build_(false, data, options);
 
         // 刷新甘特图
         function reloadGantts(_data, _options) {
-                build(true, _data, _options);
+            _build_(true, _data, _options);
         }
 
-        function build(skip, _data, _options) {
-            $thisView.children().remove();
+        // 内部调用
+        function _build_(skip, _data, _options) {
+            _$thisView.children().remove();
             if (skip) {
                 if (_options) _ganttOpts = _options;
                 if (_data) _ganttDataset = _data;
@@ -208,9 +228,9 @@ var ganttData = [
                         // 没有任务则加一条空的任务
                         category.series = [{
                             cId: category.cId,
-                            sId: Math.floor((Math.random() + 1) * 1000000),
+                            sId: Math.floor((Math.random() + 1) * 10e6),
                             sName: '暂无任务',
-                            tip:'Empty Tasks',
+                            tip: 'Empty Tasks',
                             _empty: true,
                             tasks: [],
                         }];
@@ -218,7 +238,7 @@ var ganttData = [
                     }
 
                     for (let serie of category.series) {
-                        if (!serie.sId) serie.sId = Math.floor((Math.random() + 1) * 1000000);
+                        if (!serie.sId) serie.sId = Math.floor((Math.random() + 1) * 10e6);
                         serie.cId = category.cId;
 
                         if (!!serie.start && !!serie.end) {
@@ -268,24 +288,24 @@ var ganttData = [
                 // console.log("初始化数据结束", JSON.stringify(_data))
 
                 let minDays = (_opts.viewMode === 'hour') ?
-                    Math.floor((($thisView.outerWidth() - _opts.vtHeaderWidth) / (_opts.cellWidth * 24)) + 1) :
-                    Math.floor((($thisView.outerWidth() - _opts.vtHeaderWidth) / _opts.cellWidth) + 15);
+                    Math.floor(((_$thisView.outerWidth() - _opts.vtHeaderWidth) / (_opts.cellWidth * 24)) + 1) :
+                    Math.floor(((_$thisView.outerWidth() - _opts.vtHeaderWidth) / _opts.cellWidth) + 15);
                 let startEnd = getBoundaryDatesFromData(_data, minDays, _opts.viewMode, _opts.baseToday);
 
                 // 设置gantt图的整体时间范围
                 _opts.start = startEnd[0]; // 起始时间
                 _opts.end = startEnd[1];   // 截止时间
-                let div = $("<div>", {"class": "ganttview"});
+                let $div = $("<div>", {"class": "ganttview"});
 
-                _ganttChart = new Chart($thisView, div, _data, _opts);
+                _ganttChart = new Chart(_$thisView, $div, _data, _opts);
                 _ganttChart.render();
 
-                $thisView.append(div);
+                _$thisView.append($div);
 
-                _ganttBehavior = new Behavior($thisView, _ganttChart, _data, _opts);
+                _ganttBehavior = new Behavior(_$thisView, _ganttChart, _data, _opts);
                 _ganttBehavior.apply();
-            }
-        }
+            } // _init_ 结束
+        } // _build_ 结束
 
         // hour模式，取最小日期的零点作为起始日期
         // day模式，取最小日期-15天作为起始日期
@@ -342,37 +362,45 @@ var ganttData = [
             }
         }
 
-
-        function addGantt(cId, sId) {
-            let serie = _ganttChart.findSerie(cId, sId);
+        function addGantt(cId, sId, start, end) {
+            let that = this
+            let serie = that.ganttChart.findSerie(cId, sId);
             if (serie) {
                 let _newSerie = $.extend(true, {}, serie);
-                _ganttChart.addGantt(_newSerie, {});
+                that.ganttChart.addGantt(_newSerie, {
+                    start: start,
+                    end: end,
+                });
             } else {
                 let _newSerie = {
                     sId: sId,
                     sName: "No Name",
                 }
-                _ganttChart.addGantt(_newSerie, {});
+                that.ganttChart.addGantt(_newSerie, {
+                    start: start,
+                    end: end,
+                });
             }
         }
 
         function deleteGantt(cId, sId) {
+            let that = this
             if (!cId && !sId) {
-                if (_ganttChart.selectedBlock) {
-                    _ganttChart.deleteGanttBlock(_ganttChart.selectedBlock);
+                if (that.ganttChart.selectedBlock) {
+                    that.ganttChart.deleteGanttBlock(that.ganttChart.selectedBlock);
                 }
                 return
             }
-            let gantt = _ganttChart.findSerie(cId, sId)
+            let gantt = that.ganttChart.findSerie(cId, sId)
             if (gantt) {
-                _ganttChart.deleteGanttBlock(gantt);
+                that.ganttChart.deleteGanttBlock(gantt);
             }
 
         }
 
         function clearGantts() {
-            for (let category of _ganttDataset) {
+            let that = this
+            for (let category of that.ganttDataset) {
                 category.series = []
             }
         }
@@ -381,7 +409,8 @@ var ganttData = [
         //----------------------------------------对数据的操作-----------------------------------------------------------
         // 对数据的操作
         function findCategory(cId) {
-            for (let category of _ganttDataset) {
+            let that = this
+            for (let category of that.ganttDataset) {
                 if (category.cId == cId) {
                     return category
                 }
@@ -390,33 +419,36 @@ var ganttData = [
         }
 
         function deleteCategory(cId) {
-            let found;
-            for (let i = 0; i < _ganttDataset.length; i++) {
-                if (_ganttDataset[i] && _ganttDataset[i].cId == cId) {
+            let that = this
+            let found = -1;
+            for (let i = 0; i < that.ganttDataset.length; i++) {
+                if (that.ganttDataset[i] && that.ganttDataset[i].cId == cId) {
                     found = i
                     break;
                 }
             }
-            _ganttDataset.splice(i,1)
-            return null
+            if (found>=0)
+                that.ganttDataset.splice(found, 1)
         }
 
         function addCategory(cId, cName) {
+            let that = this
             let gantt = findCategory(cId);
             if (!gantt) {
                 gantt = {
-                    cId : cId,
+                    cId: cId,
                     cName: cName || "No Name",
-                    tip : 'No Name',
+                    tip: 'No Name',
                     series: [],
                 }
-                _ganttDataset.push(gantt);
+                that.ganttDataSet.push(gantt);
             } else {
                 gantt.cName = cName
             }
         }
 
         function findSerie(_cat, _serie) {
+            let that = this
             let obj = null;
             let sId = ''
             if (typeof _serie === "object") {
@@ -431,7 +463,7 @@ var ganttData = [
                     }
                 }
             } else {
-                for (let category of _ganttDataset) {
+                for (let category of that.ganttDataset) {
                     if (category.cId == _cat) {
                         for (let serie of category.series) {
                             if (serie.sId == sId) {
@@ -466,7 +498,7 @@ var ganttData = [
                 if (!_cat) return;
             }
 
-            let found ;
+            let found = -1;
             _cat.series = _cat.series || []
             for (let i = 0; i < _cat.series.length; i++) {
                 if (_cat.series[i].sId == sId) {
@@ -474,7 +506,7 @@ var ganttData = [
                     break;
                 }
             }
-            if (found) {
+            if (found>=0) {
                 _cat.series.splice(found, 1)
             }
         }
@@ -482,10 +514,12 @@ var ganttData = [
         //-----------------------------------------END:对数据的操作-------------------------------------------------------
 
         function gotoNow() {
-            _ganttChart.gotoNow()
+            this.ganttChart.gotoNow()
         }
 
-        $thisView.ganttView =  {
+        _$thisView.ganttView = {
+            ganttOpts: _ganttOpts,
+            ganttDataset: _ganttDataset,
             ganttChart: _ganttChart,
             ganttBehavior: _ganttBehavior,
 
@@ -493,7 +527,6 @@ var ganttData = [
             reloadGantts: reloadGantts,
             addGantt: addGantt,
             deleteGantt: deleteGantt,
-            build: build,
             gotoNow: gotoNow,
 
             findCategory: findCategory,
@@ -504,53 +537,54 @@ var ganttData = [
             deleteSerie: deleteSerie,
         }
 
-        return $thisView;
+        return _$thisView;
     };  // end of ganttView
 
     // 甘特图的处理
     var Chart = function ($view, container, categories, opts) {
-        let timeHandler = null;
+        let _timeHandler = null;       // 时钟句柄
 
-        let $selectedBlockOld = null
-        let $selectedBlock = null
+        let _selectedBlockOld = null  // 保存老的选择
+        let _selectedBlock = null     // 当前选择
 
         function render() {
+            let that = this
             addVtHeader(container, categories, opts);
-            let slideDiv = $("<div>", {
+            let $slideDiv = $("<div>", {
                 "class": "ganttview-slide-container",
             });
 
             let dates = getDates(opts.start, opts.end);
 
             if (opts.viewMode === 'hour') {
-                addHzHeader_Hour(slideDiv, dates, opts);
+                addHzHeader_Hour($slideDiv, dates, opts);
             } else {
-                addHzHeader_Day(slideDiv, dates, opts);
+                addHzHeader_Day($slideDiv, dates, opts);
             }
 
-            addGrid(slideDiv, categories, dates, opts);
+            addGrid($slideDiv, categories, dates, opts);
 
             if (opts.viewMode === 'hour') {
-                addBlockContainers(slideDiv, categories, opts);
-                addBlocks(slideDiv, categories, opts);
+                addBlockContainers($slideDiv, categories, opts);
+                addBlocks($slideDiv, categories, opts);
             } else {
-                addBlockContainers(slideDiv, categories, opts);
-                addBlocks(slideDiv, categories, opts);
+                addBlockContainers($slideDiv, categories, opts);
+                addBlocks($slideDiv, categories, opts);
             }
 
-            container.append(slideDiv);
+            container.append($slideDiv);
             applyLastClass(container.parent());
 
             if (opts.showNowTimeline) {
-                if (timeHandler) clearInterval(timeHandler);
-                timeHandler = setInterval(function () {
+                if (that.timeHandler) clearInterval(that.timeHandler);
+                that.timeHandler = setInterval(function () {
                     showNowTimeLineInCell();
                 }, CONST_INTERVAL);
             }
         }
 
         function gotoNow() {
-            let __scrollTopFound = function(tdObj, showTop) {
+            let __scrollTopFound = function (tdObj, showTop) {
                 if (tdObj) {
                     if (typeof showTop !== "undefined") {
                         tdObj.scrollIntoView(showTop)
@@ -572,7 +606,7 @@ var ganttData = [
                 $obj = $(".ganttview-hzheader-day-now")
             }
 
-            if ($obj && $obj.length>0) {
+            if ($obj && $obj.length > 0) {
                 __scrollTopFound($obj[0])
             }
         }
@@ -588,29 +622,29 @@ var ganttData = [
                 let offset = Math.floor(minutes / 60);
 
                 $('div.ganttview-hzheader-hours', $view).each(function () {
-                    $('div.ganttview-hzheader-hour', $(this)).each(function (i) {
-                        let dayDiv = $(this);
-                        if (i === offset - 1) {
-                            dayDiv.children().remove();
-                        } else if (i === offset) {
-                            dayDiv.children().remove();
+                    $('div.ganttview-hzheader-hour', $(this)).each(function (_i) {
+                        let $dayDiv = $(this);
+                        if (_i === offset - 1) {
+                            $dayDiv.children().remove();
+                        } else if (_i === offset) {
+                            $dayDiv.children().remove();
                             let nowMinutes = _now.getMinutes();
                             let tmLine = Math.max(Math.floor((nowMinutes / 60) * opts.cellWidth), 1);
-                            dayDiv.prepend(`<span class="ganttview-hzheader-hour-now" style="left:${tmLine}px!important;"></span>`)
+                            $dayDiv.prepend(`<span class="ganttview-hzheader-hour-now" style="left:${tmLine}px!important;"></span>`)
                         }
                     });
                 });
 
                 $('div.ganttview-grid-row', $view).each(function () {
-                    $('div.ganttview-grid-row-cell', $(this)).each(function (i) {
-                        let cellDiv = $(this);
-                        if (i === offset - 1) {
-                            cellDiv.children().remove();
-                        } else if (i === offset) {
-                            cellDiv.children().remove();
+                    $('div.ganttview-grid-row-cell', $(this)).each(function (_i) {
+                        let $cellDiv = $(this);
+                        if (_i === offset - 1) {
+                            $cellDiv.children().remove();
+                        } else if (_i === offset) {
+                            $cellDiv.children().remove();
                             let nowMinutes = _now.getMinutes();
                             let tmLine = Math.max(Math.floor((nowMinutes / 60) * opts.cellWidth), 1);
-                            cellDiv.prepend(`<span class="ganttview-grid-row-cell-now" style="left:${tmLine}px!important;"></span>`)
+                            $cellDiv.prepend(`<span class="ganttview-grid-row-cell-now" style="left:${tmLine}px!important;"></span>`)
                         }
                     });
                 });
@@ -618,55 +652,55 @@ var ganttData = [
                 let offset = DateUtils.daysBetween(opts.start, _now);
 
                 $('div.ganttview-hzheader-days', $view).each(function () {
-                    $('div.ganttview-hzheader-day', $(this)).each(function (i) {
-                        let dayDiv = $(this);
-                        if (i === offset - 1) {
-                            dayDiv.children().remove();
-                        } else if (i === offset) {
-                            dayDiv.children().remove();
+                    $('div.ganttview-hzheader-day', $(this)).each(function (_i) {
+                        let $dayDiv = $(this);
+                        if (_i === offset - 1) {
+                            $dayDiv.children().remove();
+                        } else if (_i === offset) {
+                            $dayDiv.children().remove();
 
                             let nowHour = _now.getHours();
                             let tmLine = Math.max((nowHour / 24) * opts.cellWidth, 1);
 
-                            dayDiv.prepend(`<span class="ganttview-hzheader-day-now" style="left:${tmLine}px!important;"></span>`)
+                            $dayDiv.prepend(`<span class="ganttview-hzheader-day-now" style="left:${tmLine}px!important;"></span>`)
                         }
                     });
                 });
 
                 if (opts.showDayOfWeek) {
                     $('div.ganttview-hzheader-dayofweeks', $view).each(function () {
-                        $('div.ganttview-hzheader-dayofweek', $(this)).each(function (i) {
-                            let dowDiv = $(this);
-                            if (i === offset - 1) {
-                                dowDiv.children().remove();
-                            } else if (i === offset) {
-                                dowDiv.children().remove();
+                        $('div.ganttview-hzheader-dayofweek', $(this)).each(function (_i) {
+                            let $dowDiv = $(this);
+                            if (_i === offset - 1) {
+                                $dowDiv.children().remove();
+                            } else if (_i === offset) {
+                                $dowDiv.children().remove();
 
                                 let nowHour = _now.getHours();
                                 let tmLine = Math.max((nowHour / 24) * opts.cellWidth, 1);
 
-                                dowDiv.prepend(`<span class="ganttview-hzheader-day-now" style="left:${tmLine}px!important;"></span>`)
+                                $dowDiv.prepend(`<span class="ganttview-hzheader-day-now" style="left:${tmLine}px!important;"></span>`)
                             }
                         });
                     });
                 }
 
                 $('div.ganttview-grid-row', $view).each(function () {
-                    $('div.ganttview-grid-row-cell', $(this)).each(function (i) {
-                        let cellDiv = $(this);
-                        if (i === offset - 1) {
-                            cellDiv.children().remove();
-                        } else if (i === offset) {
-                            let dowDiv = $(this);
-                            if (i === offset - 1) {
-                                dowDiv.children().remove();
-                            } else if (i === offset) {
-                                dowDiv.children().remove();
+                    $('div.ganttview-grid-row-cell', $(this)).each(function (_i) {
+                        let $cellDiv = $(this);
+                        if (_i === offset - 1) {
+                            $cellDiv.children().remove();
+                        } else if (_i === offset) {
+                            let $dowDiv = $(this);
+                            if (_i === offset - 1) {
+                                $dowDiv.children().remove();
+                            } else if (_i === offset) {
+                                $dowDiv.children().remove();
 
                                 let nowHour = _now.getHours();
                                 let tmLine = Math.max((nowHour / 24) * opts.cellWidth, 1);
 
-                                dowDiv.prepend(`<span class="ganttview-hzheader-day-now" style="left:${tmLine}px!important;"></span>`)
+                                $dowDiv.prepend(`<span class="ganttview-hzheader-day-now" style="left:${tmLine}px!important;"></span>`)
                             }
                         }
                     });
@@ -677,7 +711,7 @@ var ganttData = [
         // 表格头部处理
         function addVtHeader(container, _categories, _opts) {
             // 修改左边标题栏宽度
-            let headerDiv = $("<div>", {
+            let $headerDiv = $("<div>", {
                 "class": "ganttview-vtheader",
                 "css": {"width": _opts.vtHeaderWidth + "px"}
             });
@@ -686,18 +720,18 @@ var ganttData = [
             let vtheaderRows = CONST_VTHEADER_ROWS_NORMAL;
             if (_opts.viewMode === 'day' && _opts.showDayOfWeek) vtheaderRows = CONST_VTHEADER_ROWS_NORMAL + 1;
 
-            let headerTitleDiv = $("<div>", {
+            let $headerTitleDiv = $("<div>", {
                 "class": "ganttview-vtheader-title",
                 "css": {"width": _opts.vtHeaderWidth + "px", "height": (_opts.cellHeight + 1) * vtheaderRows + "px"}
             });
 
             // 修改左边标题栏
-            headerTitleDiv.append($("<div>", {
+            $headerTitleDiv.append($("<div>", {
                 "class": "ganttview-vtheader-title-name",
                 "css": {"height": "100%", "line-height": (_opts.cellHeight + 1) * vtheaderRows + "px", "width": "80px"}
             }).append(_opts.vtHeaderName));
 
-            headerTitleDiv.append($("<div>", {
+            $headerTitleDiv.append($("<div>", {
                 "class": "ganttview-vtheader-title-name",
                 "css": {
                     "height": "100%",
@@ -706,10 +740,10 @@ var ganttData = [
                 }
             }).append(_opts.vtHeaderSubName));
 
-            headerDiv.append(headerTitleDiv);
+            $headerDiv.append($headerTitleDiv);
             for (let category of _categories) {
                 // 左边标题栏项目
-                let itemDiv = $("<div>", {
+                let $itemDiv = $("<div>", {
                     "id": "ganttview-vtheader-item-" + category.cId,
                     "title": (category.tip || category.cName),
                     "class": "ganttview-vtheader-item",
@@ -717,7 +751,7 @@ var ganttData = [
                 });
 
                 // 左边标题栏项目名称
-                itemDiv.append($("<div>", {
+                $itemDiv.append($("<div>", {
                     "id": "ganttview-vtheader-item-name-" + category.cId,
                     "class": "ganttview-vtheader-item-name",
                     "css": {
@@ -727,10 +761,10 @@ var ganttData = [
                 }).append(category.cName));
 
                 // 左边任务序列名称
-                let seriesDiv = $("<div>", {"class": "ganttview-vtheader-series"});
+                let $seriesDiv = $("<div>", {"class": "ganttview-vtheader-series"});
                 for (let serie of category.series) {
                     // 每个series中的一个元素，作为单独一行
-                    seriesDiv.append($("<div>", {
+                    $seriesDiv.append($("<div>", {
                         "id": "ganttview-vtheader-series-name-" + serie.sId,
                         "class": "ganttview-vtheader-series-name",
                         "title": (serie.tip || serie.sName),
@@ -739,19 +773,19 @@ var ganttData = [
                 }
 
                 // 添加名称+任务名称
-                itemDiv.append(seriesDiv);
-                headerDiv.append(itemDiv);
+                $itemDiv.append($seriesDiv);
+                $headerDiv.append($itemDiv);
             }
 
-            container.append(headerDiv);
+            container.append($headerDiv);
         }
 
         // 根据日期进行分割
         function addHzHeader_Day(container, _dates, _opts) {
-            let headerDiv = $("<div>", {"class": "ganttview-hzheader"});
-            let monthsDiv = $("<div>", {"class": "ganttview-hzheader-months clearfix"});
-            let daysDiv = $("<div>", {"class": "ganttview-hzheader-days clearfix"});
-            let dayOfWeeksDiv = $("<div>", {"class": "ganttview-hzheader-dayofweeks clearfix"});
+            let $headerDiv = $("<div>", {"class": "ganttview-hzheader"});
+            let $monthsDiv = $("<div>", {"class": "ganttview-hzheader-months clearfix"});
+            let $daysDiv = $("<div>", {"class": "ganttview-hzheader-days clearfix"});
+            let $dayOfWeeksDiv = $("<div>", {"class": "ganttview-hzheader-dayofweeks clearfix"});
 
             let totalW = 0;
 
@@ -760,7 +794,7 @@ var ganttData = [
                     // 显示月份
                     let w = _dates[y][m].length * _opts.cellWidth;
                     totalW = totalW + w;
-                    monthsDiv.append($("<div>", {
+                    $monthsDiv.append($("<div>", {
                         "class": "ganttview-hzheader-month",
                         "css": {"width": w + "px"}
                     }).append(y + "年" + DateUtils.getMonthNames(m))); // 显示标题
@@ -791,25 +825,25 @@ var ganttData = [
                             }
                         }
 
-                        daysDiv.append(dayDiv);
+                        $daysDiv.append(dayDiv);
                     }
 
                     // 显示星期
                     if (_opts.viewMode === 'day' && _opts.showDayOfWeek) {
                         for (let d in _dates[y][m]) {
                             let _date = _dates[y][m][d];
-                            let dowDiv = $("<div>", {
+                            let $dowDiv = $("<div>", {
                                 "class": "ganttview-hzheader-dayofweek",
                                 "css": {"width": _opts.cellWidth + "px"}
                             });
 
-                            dowDiv.append(DateUtils.getWeekName(_date.getDay()));
+                            $dowDiv.append(DateUtils.getWeekName(_date.getDay()));
 
                             // 周末的处理
                             if (DateUtils.isWeekend(_date) && _opts.showWeekends) {
                                 // dayDiv.addClass("ganttview-weekend");
-                                if (DateUtils.isSaturday(_date)) dowDiv.addClass("ganttview-saturday");
-                                if (DateUtils.isSunday(_date)) dowDiv.addClass("ganttview-sunday");
+                                if (DateUtils.isSaturday(_date)) $dowDiv.addClass("ganttview-saturday");
+                                if (DateUtils.isSunday(_date)) $dowDiv.addClass("ganttview-sunday");
                             }
 
                             if (_opts.showNowTimeline) {
@@ -817,33 +851,33 @@ var ganttData = [
                                     let nowHour = new Date().getHours();
                                     let tmLine = Math.max((nowHour / 24) * _opts.cellWidth, 1);
 
-                                    dowDiv.prepend(`<span class="ganttview-hzheader-day-now" style="left:${tmLine}px!important;"></span>`)
+                                    $dowDiv.prepend(`<span class="ganttview-hzheader-day-now" style="left:${tmLine}px!important;"></span>`)
                                 }
                             }
 
-                            dayOfWeeksDiv.append(dowDiv);
+                            $dayOfWeeksDiv.append($dowDiv);
                         }
                     }
                 }
             }
 
-            monthsDiv.css("width", totalW + "px");
-            daysDiv.css("width", totalW + "px");
-            headerDiv.append(monthsDiv).append(daysDiv);
+            $monthsDiv.css("width", totalW + "px");
+            $daysDiv.css("width", totalW + "px");
+            $headerDiv.append($monthsDiv).append($daysDiv);
 
             if (_opts.viewMode === 'day' && _opts.showDayOfWeek) {
-                dayOfWeeksDiv.css("width", totalW + "px");
-                headerDiv.append(dayOfWeeksDiv)
+                $dayOfWeeksDiv.css("width", totalW + "px");
+                $headerDiv.append($dayOfWeeksDiv)
             }
 
-            container.append(headerDiv);
+            container.append($headerDiv);
         }
 
         // 根据小时进行分割
         function addHzHeader_Hour(container, _dates, _opts) {
-            let headerDiv = $("<div>", {"class": "ganttview-hzheader"});
-            let daysDiv = $("<div>", {"class": "ganttview-hzheader-days clearfix"});
-            let hoursDiv = $("<div>", {"class": "ganttview-hzheader-hours clearfix"});
+            let $headerDiv = $("<div>", {"class": "ganttview-hzheader"});
+            let $daysDiv = $("<div>", {"class": "ganttview-hzheader-days clearfix"});
+            let $hoursDiv = $("<div>", {"class": "ganttview-hzheader-hours clearfix"});
             let totalW = 0;
             let hours = DateUtils.getHours(); // 取24小时
 
@@ -859,7 +893,7 @@ var ganttData = [
                         }
 
                         totalW = totalW + w;
-                        daysDiv.append($("<div>", {
+                        $daysDiv.append($("<div>", {
                             "class": "ganttview-hzheader-day",
                             "css": {"width": w + "px"}
                         }).append(`${y}年${DateUtils.getMonthNames(m)}月${_date.getDate()}日  ${weekName}`)); // 显示标题`
@@ -867,13 +901,13 @@ var ganttData = [
                         // 周末的处理
                         if (DateUtils.isWeekend(_date) && _opts.showWeekends) {
                             // dayDiv.addClass("ganttview-weekend");
-                            if (DateUtils.isSaturday(_date)) daysDiv.addClass("ganttview-saturday");
-                            if (DateUtils.isSunday(_date)) daysDiv.addClass("ganttview-sunday");
+                            if (DateUtils.isSaturday(_date)) $daysDiv.addClass("ganttview-saturday");
+                            if (DateUtils.isSunday(_date)) $daysDiv.addClass("ganttview-sunday");
                         }
 
                         // 显示小时
                         for (let h = 0; h < hours.length; h++) {
-                            let hourDiv = $("<div>", {
+                            let $hourDiv = $("<div>", {
                                 "class": "ganttview-hzheader-hour",
                                 "css": {"width": _opts.cellWidth + "px"}
                             });
@@ -883,28 +917,28 @@ var ganttData = [
                                     let nowMinutes = new Date().getMinutes();
                                     let tmLine = Math.max((nowMinutes / 60) * _opts.cellWidth, 1);
 
-                                    hourDiv.prepend(`<span class="ganttview-hzheader-hour-now" style="left:${tmLine}px!important;"></span>`)
+                                    $hourDiv.prepend(`<span class="ganttview-hzheader-hour-now" style="left:${tmLine}px!important;"></span>`)
                                 }
                             }
 
-                            hourDiv.append(hours[h]);
-                            hoursDiv.append(hourDiv);
+                            $hourDiv.append(hours[h]);
+                            $hoursDiv.append($hourDiv);
                         }
                     }
                 }
             }
 
-            daysDiv.css("width", totalW + "px");
-            hoursDiv.css("width", totalW + "px");
-            headerDiv.append(daysDiv).append(hoursDiv);
+            $daysDiv.css("width", totalW + "px");
+            $hoursDiv.css("width", totalW + "px");
+            $headerDiv.append($daysDiv).append($hoursDiv);
 
-            container.append(headerDiv);
+            container.append($headerDiv);
         }
 
         // 增加day/hour模式下的网格线及网格单元
         function addGrid(container, _categories, _dates, _opts) {
-            let gridDiv = $("<div>", {"class": "ganttview-grid"});
-            let rowDiv = $("<div>", {"class": "ganttview-grid-row clearfix"});
+            let $gridDiv = $("<div>", {"class": "ganttview-grid"});
+            let $rowDiv = $("<div>", {"class": "ganttview-grid-row clearfix"});
             let hours = DateUtils.getHours(); // 取24小时
 
             if (_opts.viewMode === 'hour') {
@@ -915,13 +949,13 @@ var ganttData = [
                             let _date = _dates[y][m][d];
                             let shoWeekends = DateUtils.isWeekend(_date) && _opts.showWeekends;
                             for (let h = 0; h < hours.length; h++) {
-                                let cellDiv = $("<div>", {
+                                let $cellDiv = $("<div>", {
                                     "class": "ganttview-grid-row-cell",
                                     "css": {"width": _opts.cellWidth + "px", "height": _opts.cellHeight + "px"}
                                 });
 
                                 if (shoWeekends) {
-                                    cellDiv.addClass("ganttview-weekend");
+                                    $cellDiv.addClass("ganttview-weekend");
                                 }
 
                                 if (_opts.showNowTimeline) {
@@ -929,10 +963,10 @@ var ganttData = [
                                         let nowMinutes = new Date().getMinutes();
                                         let tmLine = Math.max((nowMinutes / 60) * _opts.cellWidth, 1);
 
-                                        cellDiv.prepend(`<span class="ganttview-grid-row-cell-now" style="left:${tmLine}px!important;"></span>`)
+                                        $cellDiv.prepend(`<span class="ganttview-grid-row-cell-now" style="left:${tmLine}px!important;"></span>`)
                                     }
                                 }
-                                rowDiv.append(cellDiv);
+                                $rowDiv.append($cellDiv);
                             }
                         }
                     }
@@ -943,43 +977,43 @@ var ganttData = [
                     for (let m in _dates[y]) {
                         for (let d in _dates[y][m]) {
                             let _date = _dates[y][m][d];
-                            let cellDiv = $("<div>", {
+                            let $cellDiv = $("<div>", {
                                 "class": "ganttview-grid-row-cell",
                                 "css": {"width": _opts.cellWidth + "px", "height": _opts.cellHeight + "px"}
                             });
                             if (DateUtils.isWeekend(_date) && _opts.showWeekends) {
                                 // cellDiv.addClass("ganttview-weekend");
-                                if (DateUtils.isSaturday(_date)) cellDiv.addClass("ganttview-saturday");
-                                if (DateUtils.isSunday(_date)) cellDiv.addClass("ganttview-sunday");
+                                if (DateUtils.isSaturday(_date)) $cellDiv.addClass("ganttview-saturday");
+                                if (DateUtils.isSunday(_date)) $cellDiv.addClass("ganttview-sunday");
                             }
                             if (_opts.showNowTimeline) {
                                 if (DateUtils.isShowDayLine(_date)) {
                                     let nowHour = new Date().getHours();
                                     let tmLine = Math.max((nowHour / 24) * _opts.cellWidth, 1);
 
-                                    cellDiv.prepend(`<span class="ganttview-grid-row-cell-now" style="left:${tmLine}px!important;"></span>`)
+                                    $cellDiv.prepend(`<span class="ganttview-grid-row-cell-now" style="left:${tmLine}px!important;"></span>`)
                                 }
                             }
-                            rowDiv.append(cellDiv);
+                            $rowDiv.append($cellDiv);
                         }
                     }
                 }
             }
 
             // 对grid单元进行处理
-            let w = $("div.ganttview-grid-row-cell", rowDiv).length * _opts.cellWidth;
-            rowDiv.css("width", w + "px");
-            gridDiv.css("width", w + "px");
+            let w = $("div.ganttview-grid-row-cell", $rowDiv).length * _opts.cellWidth;
+            $rowDiv.css("width", w + "px");
+            $gridDiv.css("width", w + "px");
             for (let category of _categories) {
                 // 第一项：作为名称
                 for (let serie of category.series) {
                     // 第二项：每一个序列定义了一行
-                    let cloneRowDiv = rowDiv.clone(); // 复制每一行
-                    cloneRowDiv.attr("id", "ganttview-grid-row-" + serie.sId);
-                    cloneRowDiv.attr("cId", category.cId);
+                    let $cloneRowDiv = $rowDiv.clone(); // 复制每一行
+                    $cloneRowDiv.attr("id", "ganttview-grid-row-" + serie.sId);
+                    $cloneRowDiv.attr("cId", category.cId);
 
                     // 每行都可以接受拖放的任务
-                    (typeof cloneRowDiv.droppable === "function") && cloneRowDiv.droppable({
+                    (typeof $cloneRowDiv.droppable === "function") && $cloneRowDiv.droppable({
                         accept: '.ganttview-task', // 只接受的类型
                         hoverClass: "gantt-drag-hover",
                         drop: function (e, ui) {
@@ -1045,27 +1079,27 @@ var ganttData = [
                     });
 
                     // 添加这一新行
-                    gridDiv.append(cloneRowDiv);
+                    $gridDiv.append($cloneRowDiv);
                 }
             }
-            container.append(gridDiv);
+            container.append($gridDiv);
         }
 
         function addBlockContainers(container, _categories, _opts) {
-            let blocksDiv = $("<div>", {"class": "ganttview-blocks"});
+            let $blocksDiv = $("<div>", {"class": "ganttview-blocks"});
             for (let category of _categories) {
                 for (let serie of category.series) {
                     // 每个series中的一个元素，作为单独一行
-                    let containerDiv = $("<div>", {
+                    let $containerDiv = $("<div>", {
                         "id": "ganttview-block-container-" + serie.sId,
                         "class": "ganttview-block-container",
                         "css": {"height": _opts.cellHeight + "px"} // 注：gantt bar要比这个小，预留空间为其它用途
                     });
-                    containerDiv.attr('data-cId', category.cId)
-                    blocksDiv.append(containerDiv);
+                    $containerDiv.attr('data-cId', category.cId)
+                    $blocksDiv.append($containerDiv);
                 }
             }
-            container.append(blocksDiv);
+            container.append($blocksDiv);
         }
 
         function addBlocks(container, _categories, _opts) {
@@ -1091,10 +1125,10 @@ var ganttData = [
                             let size = Math.floor(task_minutes * pixel_per_minutes) + 1;
                             let offset = Math.floor(DateUtils.minutesBetween(_opts.start, task.start) * pixel_per_minutes) + 1;
 
-                            let block = $("<div>", {
+                            let $block = $("<div>", {
                                 "id": "ganttview-block-" + task.tId,
                                 "class": "ganttview-block",
-                                "title": (task.tip?task.tip: `${category.cName}: ${serie.sName}: ${task.tName}  任务时间: [${task.start.format("dd HH:mm")} -- ${task.end.format("dd HH:mm")}]`),
+                                "title": (task.tip ? task.tip : `${category.cName}: ${serie.sName}: ${task.tName}  任务时间: [${task.start.format("dd HH:mm")} -- ${task.end.format("dd HH:mm")}]`),
                                 "css": {
                                     "width": size + "px", // 甘特条宽度, 显示整天时，不精确定位小时
                                     "height": _opts.cellHeight - CONST_CELL_HGT_RESERVED + "px",  // 甘特条高度
@@ -1103,18 +1137,18 @@ var ganttData = [
                                 }
                             });
 
-                            if (task.isTask) block.addClass("ganttview-task"); // 对于任务类型的处理
-                            if (_count > 1 && _opts.multiGantt) block.addClass("ganttview-block-more");
+                            if (task.isTask) $block.addClass("ganttview-task"); // 对于任务类型的处理
+                            if (_count > 1 && _opts.multiGantt) $block.addClass("ganttview-block-more");
 
-                            updateBlockData(block, category, serie, task);
+                            updateBlockData($block, category, serie, task);
 
                             // 有其他背景色的要求
                             if (!!task.options && task.options.color) {
-                                block.css("background-color", task.options.color);
+                                $block.css("background-color", task.options.color);
                             }
 
                             // 放置文本位置
-                            block.append($("<div>", {
+                            $block.append($("<div>", {
                                 "id": "ganttview-block-text-" + task.tId,
                                 "class": "ganttview-block-text",
                                 "css": {
@@ -1124,17 +1158,18 @@ var ganttData = [
                                 "margin-top": CONST_CELL_TOP_MARGIN + "px",
                             }).text(DateUtils.getTagFromMinutes(task_minutes)));
 
-                            $(rows[rowIdx]).append(block);
+                            $(rows[rowIdx]).append($block);
 
                         } else {
                             // day 模式
                             let size = DateUtils.daysBetween(task.start, task.end) + 1;
                             let offset = DateUtils.daysBetween(_opts.start, task.start);
 
-                            let block = $("<div>", {
+                            let $block = $("<div>", {
                                 "id": "ganttview-block-" + task.tId,
                                 "class": "ganttview-block",
-                                "title": (task.tip?task.tip: `${category.cName}: ${serie.sName}: ${task.tName}  任务时间: [${task.start.format("dd HH:mm")} -- ${task.end.format("dd HH:mm")}]`),
+                                "title": (task.tip ? task.tip :
+                                    `${category.cName}: ${serie.sName}: ${task.tName}  任务时间: [${task.start.format("dd HH:mm")} -- ${task.end.format("dd HH:mm")}]`),
                                 "css": {
                                     "width": ((size * _opts.cellWidth) - CONST_CELL_HGT_RESERVED) + "px", // 甘特条宽度, 显示整天时，不精确定位小时
                                     "height": _opts.cellHeight - CONST_CELL_HGT_RESERVED + "px",  // 甘特条高度
@@ -1143,18 +1178,18 @@ var ganttData = [
                                 }
                             });
 
-                            if (task.isTask) block.addClass("ganttview-task"); // 对于任务类型的处理
-                            if (_count > 1 && _opts.multiGantt) block.addClass("ganttview-block-more");
+                            if (task.isTask) $block.addClass("ganttview-task"); // 对于任务类型的处理
+                            if (_count > 1 && _opts.multiGantt) $block.addClass("ganttview-block-more");
 
-                            updateBlockData(block, category, serie, task);
+                            updateBlockData($block, category, serie, task);
 
                             // 有其他背景色的要求
                             if (!!task.options && task.options.color) {
-                                block.css("background-color", task.options.color);
+                                $block.css("background-color", task.options.color);
                             }
 
                             // 放置文本位置
-                            block.append($("<div>", {
+                            $block.append($("<div>", {
                                 "id": "ganttview-block-text-" + task.tId,
                                 "class": "ganttview-block-text",
                                 "css": {
@@ -1164,7 +1199,7 @@ var ganttData = [
                                 "margin-top": CONST_CELL_TOP_MARGIN + "px",
                             }).text(size + "天"));
 
-                            $(rows[rowIdx]).append(block);
+                            $(rows[rowIdx]).append($block);
                         }
 
                         if (!_opts.multiGantt) break; // 单任务模式，则退出
@@ -1235,7 +1270,7 @@ var ganttData = [
 
         function findTaskIdx(tasks, cId, sId) {
             let i = 0;
-            for (let task of (tasks||[])) {
+            for (let task of (tasks || [])) {
                 if (task.sId == sId && task.cId == cId) {
                     return i;
                 }
@@ -1305,7 +1340,7 @@ var ganttData = [
                 if (!_cat) return;
             }
 
-            let found ;
+            let found;
             _cat.series = _cat.series || []
             for (let i = 0; i < _cat.series.length; i++) {
                 if (_cat.series[i].sId == sId) {
@@ -1324,7 +1359,7 @@ var ganttData = [
                 if (category.cId === cId) {
                     for (let serie of category.series) {
                         if (serie.sId === sId) {
-                            for (let task of (serie.tasks||[])) {
+                            for (let task of (serie.tasks || [])) {
                                 if (task.tId === tId) {
                                     obj = task;
                                     break;
@@ -1381,7 +1416,7 @@ var ganttData = [
 
             $("div#ganttview-vtheader-item-name-" + data.cId).text(data.cName);
             $("div#ganttview-vtheader-series-name-" + data.sId).text(data.sName);
-            let blockDiv = $("div#ganttview-block-" + data.sId);
+            let $blockDiv = $("div#ganttview-block-" + data.sId);
 
             if (opts.viewMode === 'hour') {
                 // hour模式
@@ -1390,23 +1425,23 @@ var ganttData = [
                 let size = Math.floor(task_minutes * pixel_per_minutes) + 1;
                 let offset = Math.floor(DateUtils.minutesBetween(opts.start, data._task.start) * pixel_per_minutes) + 1;
 
-                blockDiv.css({
+                $blockDiv.css({
                     "width": size + "px", // 甘特条宽度, 显示整天时，不精确定位小时
                     "height": opts.cellHeight - CONST_CELL_HGT_RESERVED + "px",  // 甘特条高度
                     "margin-left": offset + "px", // 左边距
                     "margin-top": CONST_CELL_TOP_MARGIN + "px",
                 });
-                blockDiv.attr("title", DateUtils.getTagFromMinutes(task_minutes));
+                $blockDiv.attr("title", DateUtils.getTagFromMinutes(task_minutes));
             } else {
                 let size = DateUtils.daysBetween(data.start, data.end, false, false);
                 let offset = DateUtils.daysBetween(opts.start, data.start, false, false);
 
-                blockDiv.css({
+                $blockDiv.css({
                     "width": ((size * opts.cellWidth) - CONST_CELL_HGT_RESERVED) + "px",
                     "margin-left": ((offset * opts.cellWidth) + CONST_DAY_LEFT_MARGIN) + "px",
                 });
 
-                blockDiv.attr("title", Utils.getTitle((data.tip || data.sName), data.count));
+                $blockDiv.attr("title", Utils.getTitle((data.tip || data.sName), data.count));
             }
         }
 
@@ -1442,21 +1477,21 @@ var ganttData = [
                 $("div#ganttview-block-" + tId).remove();
             } else {
                 $("div#ganttview-block-" + tId).remove();
-                $("div#ganttview-grid-row-" + sId).remove();
-                $("div#ganttview-block-container-" + sId).remove();
                 if (serieDeleted) {
+                    $("div#ganttview-grid-row-" + sId).remove();
+                    $("div#ganttview-block-container-" + sId).remove();
                     $("div#ganttview-vtheader-series-name-" + sId).remove();
 
-                    let itemDiv = $("div#ganttview-vtheader-item-name-" + cId);
-                    itemDiv.removeClass("ganttview-vtheader-item-name-selected");
-                    let m = itemDiv.css("height").replace(/px/, "");
+                    let $itemDiv = $("div#ganttview-vtheader-item-name-" + cId);
+                    $itemDiv.removeClass("ganttview-vtheader-item-name-selected");
+                    let m = $itemDiv.css("height").replace(/px/, "");
                     let n = parseInt(m) - opts.cellHeight;
-                    itemDiv.css("height", n + "px");
+                    $itemDiv.css("height", n + "px");
                 }
             }
 
-            if ($selectedBlock === block)
-                $selectedBlock = null;
+            if (this.selectedBlock === block)
+                this.selectedBlock = null;
         }
 
         // 添加甘特图
@@ -1477,8 +1512,9 @@ var ganttData = [
         }
 
         return {
-            selectedBlock: $selectedBlock,
-            selectedBlockOld: $selectedBlockOld,
+            timeHandler: _timeHandler,
+            selectedBlock: _selectedBlock,
+            selectedBlockOld: _selectedBlockOld,
 
             refreshGanttBlock: refreshGanttBlock,
             deleteGanttBlock: deleteGanttBlock,
@@ -1521,7 +1557,7 @@ var ganttData = [
             $("div.ganttview-block", _container).on("click", function () {
                 let $block = $(this);
                 let $blockOld = _chart.selectedBlock
-                _chart.selectedBlock = $blockOld
+                _chart.selectedBlockOld = $blockOld
                 _chart.selectedBlock = $block
 
                 let newTask = $block.data("block-data")._task;
@@ -1641,9 +1677,9 @@ var ganttData = [
                     .css("position", "relative").css("margin-left", offset + "px");
 
             } else {
-                let _container_ = $("div.ganttview-slide-container", container);
-                let scroll = _container_.scrollLeft();
-                let offset = block.offset().left - _container_.offset().left - 1 + scroll;
+                let $_container_ = $("div.ganttview-slide-container", container);
+                let scroll = $_container_.scrollLeft();
+                let offset = block.offset().left - $_container_.offset().left - 1 + scroll;
 
                 // Set new start date
                 let daysFromStart = Math.floor(offset / cellWidth);
@@ -1706,7 +1742,7 @@ var ganttData = [
         contains: function (arr, obj) {
             let has = false;
             for (let i = 0; i < arr.length; i++) {
-                if (arr[i] == obj) {
+                if (arr[i] === obj) {
                     has = true;
                 }
             }
@@ -1860,19 +1896,25 @@ var ganttData = [
             };
         },
 
+        getQuarterOfDate: function(date) {
+            let quaterNames = ["一季度", "二季度", "三季度", "四季度"];
+            let m = math.round((date.getMonth() + 1) / 4)
+            return quaterNames[m]
+        },
+
         //是否为当前小时
         isShowHourLine: function (date, hour) {
-            let y = date.getYear(), m = date.getMonth(), d = date.getDate();
+            let y = date.getFullYear(), m = date.getMonth(), d = date.getDate();
             let _now = new Date();
-            let _y = _now.getYear(), _m = _now.getMonth(), _d = _now.getDate(), _h = _now.getHours();
+            let _y = _now.getFullYear(), _m = _now.getMonth(), _d = _now.getDate(), _h = _now.getHours();
 
             return (_h === hour) && (_d === d) && (_m === m) && (_y === y);
         },
 
         isShowDayLine: function (date) {
-            let y = date.getYear(), m = date.getMonth(), d = date.getDate()
+            let y = date.getFullYear(), m = date.getMonth(), d = date.getDate()
             let _now = new Date();
-            let _y = _now.getYear(), _m = _now.getMonth(), _d = _now.getDate()
+            let _y = _now.getFullYear(), _m = _now.getMonth(), _d = _now.getDate()
 
             return (_d === d) && (_m === m) && (_y === y);
         },
@@ -1885,9 +1927,9 @@ var ganttData = [
             return format.replace(/%[a-zA-Z]/g, function (format) {
                 switch (format) {
                     case "%d":
-                        return toFixed(date.getDate());
+                        return _toFixed(date.getDate());
                     case "%m":
-                        return toFixed(date.getMonth() + 1);
+                        return _toFixed(date.getMonth() + 1);
                     case "%q":
                         return that.getQuarterOfDate(date);
                     case "%j":
@@ -1895,7 +1937,7 @@ var ganttData = [
                     case "%n":
                         return date.getMonth() + 1;
                     case "%y":
-                        return toFixed(date.getFullYear() % 100);
+                        return _toFixed(date.getFullYear() % 100);
                     case "%Y":
                         return date.getFullYear();
                     case "%D":
@@ -1907,29 +1949,29 @@ var ganttData = [
                     case "%F":
                         return dateFormat.month_full[date.getMonth()];
                     case "%h":
-                        return toFixed(((date.getHours() + 11) % 12) + 1);
+                        return _toFixed(((date.getHours() + 11) % 12) + 1);
                     case "%g":
                         return ((date.getHours() + 11) % 12) + 1;
                     case "%G":
                         return date.getHours();
                     case "%H":
-                        return toFixed(date.getHours());
+                        return _toFixed(date.getHours());
                     case "%i":
-                        return toFixed(date.getMinutes());
+                        return _toFixed(date.getMinutes());
                     case "%a":
                         return date.getHours() > 11 ? "pm" : "am";
                     case "%A":
                         return date.getHours() > 11 ? "PM" : "AM";
                     case "%s":
-                        return toFixed(date.getSeconds());
+                        return _toFixed(date.getSeconds());
                     case "%W":
-                        return toFixed(_getWeekNumber(date));
+                        return _toFixed(_getWeekNumber(date));
                     default:
                         return format;
                 }
             });
 
-            function toFixed(t) {
+            function _toFixed(t) {
                 return t < 10 ? "0" + t : t;
             }
 
@@ -1960,7 +2002,7 @@ var ganttData = [
                     i.setMonth(i.getMonth() + e);
                     break;
                 case "year":
-                    i.setYear(i.getFullYear() + e);
+                    i.setFullYear(i.getFullYear() + e);
                     break;
                 case "hour":
                     i.setTime(i.getTime() + 60 * e * 60 * 1e3);

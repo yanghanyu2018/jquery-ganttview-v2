@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="../lib/jquery-ui-1.13.0.css" />
+	<link rel="stylesheet" type="text/css" href="../gantt-view-v2.css" />
+	<title>jQuery Gantt v2</title>
+
+	<script type="text/javascript" src="./js/jquery.min.js"></script>
+	<script type="text/javascript" src="./js/dateTime.js"></script>
+	<script src="../lib/jquery-ui-1.13.0.js"></script>
+	<script src="../gantt-view-v2.js"></script>
+</head>
+<body>
+<p>
+	<button onclick="refreshMyGanttChart()">刷新甘特图(day模式)</button>
+	<button onclick="deleteMyGanttChart()">删除所选甘特图</button>
+	<button onclick="addMyGanttChart()">增加甘特图</button>
+</p>
+<div>
+	<div id="ganttChart"></div>
+</div>
+<p>
+	<button onclick="refreshMyGanttChart2()">刷新甘特图(hour模式)</button>
+</p>
+<div>
+	<div id="ganttChart2"></div>
+</div>
+</body>
+<script>
+	var ganttData = [
+		{
+			cId: 1, cName: "机位1",
+			series: [
+			]
+		},
+		{
+			cId: 2, cName: "机位2", series: [
+				{ sId:21, sName: "计划", start: '2023/01/05', end: '2023/01/20', tasks:[
+						{tId: 211, tName: "计划A", sId:21, start: '2023/01/05', end: '2023/01/07',  options:{draggable:false,resizable:false, color: 'rgba(255, 204, 51, .8)'}},
+						{tId: 212, tName: "计划B", sId:21, start: '2023/01/09', end: '2023/01/10',  options:{}},
+						{tId: 213, tName: "计划C", sId:21, start: '2023/01/11', end: '2023/01/16',  options:{}},
+						{tId: 214, tName: "计划C", sId:21, start: '2023/02/11', end: '2023/02/16',  options:{}},
+						{tId: 215, tName: "计划C", sId:21, start: '2023/03/11', end: '2023/03/16',  options:{}},
+						{tId: 216, tName: "计划C", sId:21, start: '2023/04/11', end: '2023/04/16',  options:{}},
+					] },
+				{ sId:22, sName: "实际", start: '2023/01/06', end: '2023/01/17', isTask: true }
+			]
+		},
+		{
+			cId: 3, cName: "机位3", series: [
+				             { sId:31, sName: "CA 1234", start: '2023/01/11', end: '2023/01/15',  options: {draggable: false, resizable: false, color: 'rgba(153, 204, 51, .8)'}}
+			]
+		},
+		{
+			cId: 4, cName: "机位4", series: [
+				{ sId:41, sName: "CA 2344A/FM 3876/MU 3132", start: '2023/01/01', end: '2023/01/03', isTask: true }
+			]
+		},
+		{
+			cId: 5, cName: "机位5", series: [
+				{ sId:51, sName: "任务5", start: '2023/01/16', end: '2023/01/24', isTask: true }
+			]
+		},
+		{
+			cId: 6, cName: "机位6", series: [
+				{ sId:61, sName: "任务6", start: '2023/01/08', end: '2023/01/17', isTask: true }
+			]
+		},
+		{
+			cId: 7, cName: "机位7", series: [
+				{ sId:71, sName: "任务7", start: '2023/01/25', end: '2023/02/03', isTask: true }
+			]
+		},
+		{
+			cId: 8, cName: "机位8", series: [
+				{ sId:81, sName: "任务8", start: '2023/01/08', end: '2023/01/12', isTask: true }
+			]
+		}
+	];
+
+	var gantt = $("#ganttChart").ganttView(ganttData, {
+		viewMode: "day",
+		baseToday: true, // 到当前日期为止
+		showWeekends: true,
+		showNowTimeline: true,
+		multiGantt: true,
+		vtHeaderName: "机位",
+		vtHeaderSubName: "航班",
+		gridHoverV: true,
+		gridHoverH: false,
+		behavior: {
+			clickable: true,
+			draggable: true,
+			resizable: true,
+			onClick: function (data) {
+				// var msg = "click事件:" + JSON.stringify(data);
+				// console.log(msg);
+			},
+			onResize: function (data) {
+				// var msg = "resize事件:" + JSON.stringify(data);
+				// console.log(msg);
+			},
+			onDrag: function (data) {
+				// var msg = "drag事件:" + JSON.stringify(data);
+				// console.log(msg);
+			}
+		}
+	});
+
+	function refreshMyGanttChart() {
+		gantt.ganttView.reloadGantts();
+	}
+
+	function deleteMyGanttChart() {
+		gantt.ganttView.deleteGantt();
+	}
+
+	function addMyGanttChart() {
+		gantt.ganttView.addGantt(1, 21)
+	}
+
+	//----------------------------------------------------------------------------------------------//
+	// 甘特图2
+	var ganttData2 = [
+		{
+			cId: 1, cName: "机位1",
+			series: [
+			]
+		},
+		{
+			cId: 2, cName: "机位2", series: [
+				{ sId:21, sName: "计划", start: '2023/01/05', end: '2023/01/20', tasks:[
+						{tId: 211, tName: "计划A", sId:21, start: '2023/01/05 09:30:00', end: '2023/01/05 10:30:00',  options:{draggable:false,resizable:false, color: 'rgba(255, 204, 51, .8)'}},
+						{tId: 212, tName: "计划B", sId:21, start: '2023/01/05 11:30:00', end: '2023/01/05 14:30:00',  options:{}},
+						{tId: 213, tName: "计划C", sId:21, start: '2023/01/11 09:30:00', end: '2023/01/16 09:30:00',  options:{}},
+						{tId: 214, tName: "计划C", sId:21, start: '2023/02/11 09:30:00', end: '2023/02/16 09:30:00',  options:{}},
+						{tId: 215, tName: "计划C", sId:21, start: '2023/03/11 09:30:00', end: '2023/03/16 09:30:00',  options:{}},
+						{tId: 216, tName: "计划C", sId:21, start: '2023/04/11 09:30:00', end: '2023/04/16 09:30:00',  options:{}},
+					] },
+				{ sId:22, sName: "实际", start: '2023/01/05 11:30:00', end: '2023/01/05 12:30:00', isTask: true }
+			]
+		},
+		{
+			cId: 3, cName: "机位3", series: [
+				{ sId:31, sName: "任务3", start: '2023/01/05 07:00', end: '2023/01/05 10:00', isTask: true }
+			]
+		},
+	];
+
+	var gantt2 = $("#ganttChart2").ganttView(ganttData2, {
+		viewMode: "hour",
+		baseToday: false, // 到当前日期为止
+		showWeekends: true,
+		showNowTimeline: true,
+		multiGantt: true,
+		vtHeaderName: "机位",
+		vtHeaderSubName: "航班",
+		cellWidth: 60,
+		gridHoverV: true,
+		gridHoverH: false,
+		behavior: {
+			clickable: true,
+			draggable: true,
+			resizable: true,
+			onClick: function (data) {
+				// var msg = "click事件:" + JSON.stringify(data);
+				// console.log(msg);
+			},
+			onResize: function (data) {
+				// var msg = "resize事件:" + JSON.stringify(data);
+				// console.log(msg);
+			},
+			onDrag: function (data) {
+				// var msg = "drag事件:" + JSON.stringify(data);
+				// console.log(msg);
+			}
+		}
+	});
+
+	function refreshMyGanttChart2() {
+		gantt2.ganttView.reloadGantts();
+	}
+
+</script>
+
+</html>
