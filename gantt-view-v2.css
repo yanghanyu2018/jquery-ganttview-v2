@@ -1,5 +1,5 @@
 *, *::after, *::before {
-	box-sizing: border-box;  /* !!!·Ç³£ÖØÒª£¬·ñÔò£¬»áÔì³É°æÃæ´íÎó */
+	box-sizing: border-box;  /* !!!éå¸¸é‡è¦ï¼Œå¦åˆ™ï¼Œä¼šé€ æˆç‰ˆé¢é”™è¯¯ */
 }
 
 .clearfix:after {
@@ -35,7 +35,7 @@ div.ganttview-hzheader-hour {
 }
 
 /* Horizontal Header */
-/*´óµÄ¿ò*/
+/*å¤§çš„æ¡†*/
 div.ganttview-hzheader-dayofweeks,
 div.ganttview-hzheader-months,
 div.ganttview-hzheader-days,
@@ -43,7 +43,7 @@ div.ganttview-hzheader-hours {
     border-bottom: 1px solid #d0d0d0;
 }
 
-/*Ã¿Ò»¸öĞ¡¿ò*/
+/*æ¯ä¸€ä¸ªå°æ¡†*/
 div.ganttview-hzheader-hour {
     width: 60px;
     height: 30px;
@@ -62,7 +62,7 @@ div.ganttview-hzheader-day {
     color: #777;
 }
 
-/*µ±Ç°Ê±¼ä*/
+/*å½“å‰æ—¶é—´*/
 .ganttview-grid-row-cell-now,
 .ganttview-hzheader-day-now,
 .ganttview-hzheader-hour-now{
@@ -78,7 +78,7 @@ div.ganttview-hzheader-day {
     position: relative;
     z-index: 20;
 }
-/*Êó±êÑ¡Ôñ*/
+/*é¼ æ ‡é€‰æ‹©*/
 div.ganttview-grid-row-cell-hover{
     /*background-color:rgba(210, 232, 232, 0.9) !important*/
     background-color: #FAFAFA !important
@@ -94,7 +94,7 @@ div.ganttview-hzheader-hour.ganttview-grid-row-row-hover{
     background-color: rgba(210, 232, 232, 0.9) !important
 }
 
-/*×îºóµÄµ¥Ôª*/
+/*æœ€åçš„å•å…ƒ*/
 div.ganttview-hzheader-month.last,
 div.ganttview-hzheader-day.last,
 div.ganttview-hzheader-hour.last {
@@ -223,7 +223,7 @@ div.ganttview-block.gannttview-block-selected {
     background-color: rgba(220, 174, 189, 0.8);
 }
 
-/* bar ÎÄ×Ö*/
+/* bar æ–‡å­—*/
 div.ganttview-block-text {
     box-sizing: border-box;
     position: absolute;
@@ -232,17 +232,23 @@ div.ganttview-block-text {
     /*line-height: 20px;*/
     color: #fff;
     padding: 0px 4px;
+
     -moz-user-select: none;
     -webkit-user-select: none;
     user-select: none;
 }
 
-div.ganttview-block.ganttview-block-more {
+div.ganttview-block:not(:first-child) {
     margin-top: -22px !important;
     /*z-index: 22;*/
 }
 
-/*¸ÊÌØÌõ*/
+div.ganttview-block.ganttview-block-conflict {
+    background-color: red;
+    color:blue;
+}
+
+/*ç”˜ç‰¹æ¡*/
 div.ganttview-block.ganttview-task {
     border: 1px dashed rgba(243, 6, 6, 0.5);
 }
@@ -253,7 +259,7 @@ div.ganttview-block div.ui-resizable-handle.ui-resizable-s {
     bottom: 0;
 }
 
-/*ÍÏ·Å*/
+/*æ‹–æ”¾*/
 .gantt-drag-hover {
     background-color: #D7FFF0;
 }
