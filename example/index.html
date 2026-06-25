@@ -15,12 +15,14 @@
 <body>
 <p>
 	<button onclick="refreshMyGanttChart()">刷新甘特图(day模式)</button>
+	<button onclick="gotoCurrentTimeRange()">定位当前时间范围</button>
 </p>
 <div>
 	<div id="ganttChart"></div>
 </div>
 <p>
 	<button onclick="refreshMyGanttChart2()">刷新甘特图(hour模式)</button>
+	<button onclick="gotoCurrentTimeRange2()">定位当前时间范围</button>
 </p>
 <div>
 	<div id="ganttChart2"></div>
@@ -83,6 +85,10 @@
 		baseToday: true, // 到当前日期为止
 		showWeekends: true,
 		showNowTimeline: true,
+		scrollToNowOnLoad: true,
+		nowViewportPosition: 'center',
+		highlightConflicts: true,
+		preserveScrollOnReload: false,
 		multiGantt: true,
 		vtHeaderName: "机位",
 		vtHeaderSubName: "航班",
@@ -109,6 +115,18 @@
 
 	function refreshMyGanttChart() {
 		gantt.ganttView.reloadGantts();
+	}
+
+	function gotoCurrentTimeRange() {
+		// day模式：切换到当前日前后15天的运行窗口，再定位当前时间。
+		// 这样即使示例数据是历史日期，也能看到按钮确实切换到当前时间范围。
+		var now = new Date();
+		var start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 15, 0, 0, 0, 0);
+		var end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 15, 23, 59, 59, 999);
+		if (gantt.ganttView.setVisibleWindow) {
+			gantt.ganttView.setVisibleWindow(start, end, false);
+		}
+		gantt.ganttView.gotoNow('center');
 	}
 
 
@@ -145,6 +163,10 @@
 		baseToday: false, // 到当前日期为止
 		showWeekends: true,
 		showNowTimeline: true,
+		scrollToNowOnLoad: true,
+		nowViewportPosition: 'center',
+		highlightConflicts: true,
+		preserveScrollOnReload: false,
 		multiGantt: true,
 		vtHeaderName: "机位",
 		vtHeaderSubName: "航班",
@@ -172,6 +194,15 @@
 
 	function refreshMyGanttChart2() {
 		gantt2.ganttView.reloadGantts();
+	}
+
+	function gotoCurrentTimeRange2() {
+		// hour模式：切换到当前时间前后12小时的运行窗口，再定位当前时间。
+		// 使用对称窗口可以让当前时间尽量位于视口中间，而不是只跳到当天0点附近。
+		if (gantt2.ganttView.setRollingWindow) {
+			gantt2.ganttView.setRollingWindow(12, 12, false);
+		}
+		gantt2.ganttView.gotoNow('center');
 	}
 
 </script>

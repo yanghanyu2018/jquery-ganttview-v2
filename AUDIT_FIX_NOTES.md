@@ -1,23 +1,91 @@
-# jquery-ganttview-v2 audit fix notes
+# v0.6.6 多语种增强说明
 
-本修复版基于上传包做最小化修复，目标是保持轻量级控件定位，同时解决机场资源进度显示中会高频触发的问题。
+本版本在 v0.6.5 的基础上增加多语种能力，目标是让控件可以继续保持轻量，同时适合机场行业项目中的中文、英文、法文、德文、泰文等多语种页面。
 
-## 已修复重点
+## 新增能力
 
-1. 空资源显示：全部资源为空、某些资源无任务时，不再因为 `minStart/maxEnd` 为空而报错。
-2. series 直接显示：`series` 自身包含 `start/end` 时，即使未设置 `isTask` 也会作为只显示条渲染；`isTask` 仅表示是否为可拖拽任务。
-3. 子任务数据：`series.tasks` 不再依赖父级 `series.start/end` 才初始化，适合机场资源行 + 多任务条的数据模型。
-4. dataUrl：异步 JSON 加载完成后再初始化和渲染。
-5. 动态新增：`addGantt()` 后统一刷新，确保新增行、块、点击、拖拽、缩放行为一致。
-6. 动态删除：修复 `deleteGantt()` 调用不存在的 `chart.findSerie()` 问题，并支持按选中块或 `cId/sId/tId` 删除。
-7. 多图隔离：多个甘特图同时在一个页面时，关键选择器限定在当前控件容器内。
-8. 冲突检查：实现同一序列内基础时间重叠检测，重叠块增加 `ganttview-block-conflict`。
-9. 日期显示：控件内部 tooltip 不再依赖 example 中扩展的 `Date.prototype.format`。
-10. DateUtils：修复 `math.round`、`this.options.weekStart`、星期全称、hour 标题“月月”等问题。
+### 1. 新增 locale 配置
 
-## 仍建议后续处理
+```js
+$('#ganttChart').ganttView(data, {
+  locale: 'zh-CN' // zh-CN / en-US / fr-FR / de-DE / th-TH
+});
+```
 
-1. DOM ID 最好加入实例前缀，例如 `gv-{instanceId}-block-{tId}`，彻底避免多图同 ID。
-2. airport 场景应增加资源类型字段，例如 `resourceType: gate/checkin/belt`，由样式层决定颜色和图标。
-3. 如果 day 模式用于“整日占用”，冲突判断可改为 end-inclusive；如果用于机场实际时间，应保持当前 half-open `[start, end)` 判断。
-4. 建议新增自动化测试：空资源、series-only、tasks-without-parent-start、两个图同 sId/tId、add/delete、hour 模式、冲突检测。
+支持别名：`zh`、`en`、`fr`、`de`、`th` 等。
+
+### 2. 内置五种语言
+
+- `zh-CN`：中文
+- `en-US`：英文
+- `fr-FR`：法文
+- `de-DE`：德文
+- `th-TH`：泰文
+
+覆盖内容包括：
+
+- 月份、星期、季度；
+- 默认表头：Name / Task 等；
+- 自动图例：资源、状态、时间；
+- 行窗口信息；
+- 任务条横向拖动后的时间输入 prompt；
+- duration 文本：分钟 / 小时 / 天；
+- resourceType / status / timeSource 枚举标签。
+
+### 3. 增加运行时切换语言
+
+```js
+gantt.ganttView.setLocale('en-US', true);
+```
+
+第二个参数控制是否保持当前横向视口；默认保持。
+
+如果页面中有业务自定义表头，例如“机位 / 航班”，建议用 reloadGantts 同时传入：
+
+```js
+gantt.ganttView.reloadGantts(null, {
+  locale: 'en-US',
+  vtHeaderName: 'Gate',
+  vtHeaderSubName: 'Flight',
+  preserveScrollOnReload: true
+});
+```
+
+### 4. 支持项目自定义语言包
+
+```js
+$.fn.ganttView.addLanguage('es-ES', {
+  calendar: {
+    monthNameShort: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
+    dayOfWeekNames: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb']
+  },
+  text: {
+    legendResource: 'Recurso',
+    legendStatus: 'Estado',
+    legendTime: 'Tiempo'
+  },
+  labels: {
+    statuses: { planned: 'Planificado', delayed: 'Retrasado' }
+  }
+});
+```
+
+也可以在单个控件实例中传入 `i18n` 覆盖内置翻译。
+
+## 示例更新
+
+更新/新增：
+
+- `example/index.html`：增加语种切换下拉框；
+- `example/index2.html`：增加语种切换下拉框；
+- `example/airport-resources.html`：增加语种切换下拉框；
+- `example/i18n.html`：新增独立多语种示例。
+
+## 边界说明
+
+控件本身会本地化控件内置文本、时间标题、图例和 prompt。业务数据中的 `cName / sName / tName` 不会被自动翻译，因为它们属于业务数据，例如航班号、资源名、航空公司名。若需要翻译业务字段，应由业务系统提供对应语种的数据。
+
+## 检查结果
+
+- `node --check gantt-view-v2.js` 通过。
+- ZIP 完整性检查通过。

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../lib/jquery-ui-1.13.0.css" />
+    <link rel="stylesheet" type="text/css" href="../gantt-view-v2.css" />
+    <title>机场资源时间轴控件示例</title>
+    <style>
+        body { font-family: Arial, "Microsoft YaHei", sans-serif; margin: 20px; color: #333; }
+        h1 { margin-bottom: 8px; }
+        h2 { margin: 18px 0 8px; }
+        .desc { color: #666; margin-bottom: 14px; }
+        .toolbar { margin: 10px 0; }
+        .toolbar button { margin-right: 8px; padding: 5px 10px; }
+        .chart-wrap { margin-bottom: 28px; }
+        .legend { margin: 10px 0 16px; font-size: 13px; }
+        .legend span { display: inline-block; margin-right: 14px; }
+        .legend i { display: inline-block; width: 18px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: middle; }
+        .planned { background: rgba(51, 153, 204, .82); }
+        .active { background: rgba(46, 160, 67, .86); }
+        .estimated { background: rgba(255, 204, 51, .88); }
+        .delayed { background: rgba(245, 132, 31, .9); }
+        .completed { background: rgba(122, 134, 154, .82); }
+        .conflict { background: rgba(220, 53, 69, .92); }
+    </style>
+    <script src="./js/jquery.min.js"></script>
+    <script src="../lib/jquery-ui-1.13.0.js"></script>
+    <script src="../gantt-view-v2.js"></script>
+</head>
+<body>
+<h1>机场资源时间轴控件示例</h1>
+<p class="desc">示例覆盖机位、值机柜台、行李转盘三类资源。重点验证：资源类型语义、状态样式、计划/预计/实际时间字段、多层时间条、缓冲时间、短任务最小宽度、当前时间定位、时间窗口裁剪、行窗口裁剪、空资源和冲突高亮。</p>
+
+<div class="legend">
+    <span><i class="planned"></i>planned 计划</span>
+    <span><i class="active"></i>active/open 运行中</span>
+    <span><i class="estimated"></i>estimated 预计调整</span>
+    <span><i class="delayed"></i>delayed 延误</span>
+    <span><i class="completed"></i>completed 完成</span>
+    <span><i class="conflict"></i>conflict 冲突</span>
+</div>
+
+<div class="chart-wrap">
+    <h2>机位资源</h2>
+    <div class="toolbar">
+        <button onclick="gateChart.ganttView.gotoNow('center')">定位当前时间</button>
+        <button onclick="gateChart.ganttView.gotoTask('GATE-A01','plan','CA1208','center')">定位 CA1208</button>
+        <button onclick="gateChart.ganttView.setVisibleWindow(at(6,0), at(16,0), false)">显示 06:00-16:00</button>
+        <button onclick="gateChart.ganttView.setRollingWindow(2, 10, false)">当前前2后10小时</button>
+        <button onclick="gateChart.ganttView.setVisibleWindow(at(0,0), at(23,59), false)">显示全天</button>
+        <button onclick="gateChart.ganttView.setRowWindow(0, 5, true)">只看前5行</button>
+        <button onclick="gateChart.ganttView.setRowWindow(5, 5, true)">只看第6-10行</button>
+        <button onclick="gateChart.ganttView.clearRowWindow(true)">显示全部行</button>
+        <button onclick="gateChart.ganttView.reloadGantts(null, { preserveScrollOnReload: true })">保持视口刷新</button>
+        <span class="hint">提示：可左右拖动调整时间；拖动左右边缘可缩放；跨行拖动默认同时调整资源和时间。</span>
+    </div>
+    <div id="gateChart"></div>
+</div>
+
+<div class="chart-wrap">
+    <h2>值机柜台资源</h2>
+    <div id="checkinChart"></div>
+</div>
+
+<div class="chart-wrap">
+    <h2>行李转盘资源</h2>
+    <div id="beltChart"></div>
+</div>
+
+<script>
+    function at(hour, minute, dayOffset) {
+        var d = new Date();
+        d.setDate(d.getDate() + (dayOffset || 0));
+        d.setHours(hour, minute || 0, 0, 0);
+        return d;
+    }
+
+    function commonOptions(headerName, subName) {
+        return {
+            viewMode: 'hour',
+            visibleStart: at(0, 0),
+            visibleEnd: at(23, 59),
+            timeFieldMode: 'auto',
+            useBufferTime: true,
+            minBlockWidth: 8,
+            showWeekends: true,
+            showNowTimeline: true,
+            scrollToNowOnLoad: true,
+            nowViewportPosition: 'center',
+            highlightConflicts: true,
+            preserveScrollOnReload: false,
+            allowTimeMove: true,
+            allowResourceMove: true,
+            allowTimeResize: true,
+            allowCrossRowTimeMove: true,
+            conflictColor: 'rgba(220, 53, 69, .92)',
+            timeSnapMinutes: 15,
+            multiGantt: true,
+            vtHeaderName: headerName,
+            vtHeaderSubName: subName,
+            cellWidth: 56,
+            gridHoverV: true,
+            gridHoverH: true,
+            showLegend: true,
+            showTimeLayers: false,
+            timeLayers: ['planned', 'estimated', 'actual'],
+            timeLayerHeight: 10,
+            taskLabelFormatter: function (task) {
+                if (task._layerGhost) return '';
+                return task.tName || task.tId;
+            },
+            behavior: {
+                clickable: true,
+                draggable: true,
+                resizable: true,
+                onClick: function (data) { console.log('click', data); },
+                onDrag: function (data) { console.log('drag/time change', data); },
+                onResize: function (data) { console.log('resize/time adjust', data); }
+            }
+        };
+    }
+
+    var gateData = [
+        { cId: 'GATE-A01', cName: 'A01', resourceType: 'gate', series: [
+            { sId: 'plan', sName: '计划/预计', tasks: [
+                { tId: 'MU5101', tName: 'MU5101', plannedStart: at(8, 20), plannedEnd: at(10, 10), estimatedStart: at(8, 30), estimatedEnd: at(10, 25), actualStart: at(8, 36), actualEnd: at(10, 18), status: 'completed', bufferBeforeMinutes: 10, bufferAfterMinutes: 15, tip: 'MU5101 计划/预计/实际三层显示，含前后缓冲' },
+                { tId: 'CA1208', tName: 'CA1208', plannedStart: at(9, 30), plannedEnd: at(11, 0), estimatedStart: at(9, 50), estimatedEnd: at(11, 30), status: 'delayed', bufferBeforeMinutes: 10, bufferAfterMinutes: 15, tip: '与 MU5101 有重叠，用于验证冲突和延误显示' }
+            ]}
+        ]},
+        { cId: 'GATE-A02', cName: 'A02', resourceType: 'gate', series: [
+            { sId: 'actual', sName: '实际', tasks: [
+                { tId: 'CZ3306', tName: 'CZ3306', actualStart: at(12, 10), actualEnd: at(13, 55), status: 'active', bufferBeforeMinutes: 5, bufferAfterMinutes: 10, tip: 'CZ3306 实际占用' },
+                { tId: 'SHORT15', tName: '15分钟保障', start: at(14, 10), end: at(14, 25), status: 'maintenance', tip: '短任务最小宽度测试' }
+            ]}
+        ]},
+        { cId: 'GATE-A03', cName: 'A03', resourceType: 'gate', series: [] }
+    ];
+
+    var checkinData = [
+        { cId: 'CKI-C01', cName: 'C01-C04', resourceType: 'checkin', series: [
+            { sId: 'counter-open', sName: '开放', tasks: [
+                { tId: 'MU_COUNTER', tName: 'MU 柜台', plannedStart: at(6, 30), plannedEnd: at(9, 30), status: 'open' }
+            ]}
+        ]},
+        { cId: 'CKI-D01', cName: 'D01-D06', resourceType: 'checkin', series: [
+            { sId: 'counter-open', sName: '开放', tasks: [
+                { tId: 'CA_COUNTER', tName: 'CA 柜台', plannedStart: at(10, 0), plannedEnd: at(14, 0), status: 'planned' }
+            ]}
+        ]}
+    ];
+
+    var beltData = [
+        { cId: 'BELT-01', cName: '转盘01', resourceType: 'belt', series: [
+            { sId: 'arrival', sName: '到达行李', tasks: [
+                { tId: 'ARR001', tName: '到达 MU5102', estimatedStart: at(11, 10), estimatedEnd: at(11, 55), status: 'estimated' },
+                { tId: 'ARR002', tName: '到达 CA1210', estimatedStart: at(12, 10), estimatedEnd: at(12, 45), status: 'completed' }
+            ]}
+        ]},
+        { cId: 'BELT-02', cName: '转盘02', resourceType: 'belt', series: [] }
+    ];
+
+    // 构造更多机位行，用于验证行窗口裁剪。真实系统中这些行可直接来自资源接口。
+    for (var i = 4; i <= 15; i++) {
+        var gateNo = 'A' + (i < 10 ? '0' + i : i);
+        gateData.push({
+            cId: 'GATE-' + gateNo,
+            cName: gateNo,
+            resourceType: 'gate',
+            series: [{
+                sId: 'plan',
+                sName: '计划',
+                tasks: i % 3 === 0 ? [] : [{
+                    tId: 'FLT' + i,
+                    tName: 'FLT' + i,
+                    plannedStart: at(6 + (i % 8), (i * 5) % 60),
+                    plannedEnd: at(7 + (i % 8), ((i * 5) + 35) % 60),
+                    status: i % 4 === 0 ? 'delayed' : 'planned',
+                    bufferBeforeMinutes: 5,
+                    bufferAfterMinutes: 10
+                }]
+            }]
+        });
+    }
+
+    var gateOptions = commonOptions('机位', '航班');
+    gateOptions.showTimeLayers = true;
+    gateOptions.timeFieldMode = 'actual';
+    gateOptions.editableTimeSource = 'actual';
+
+    var gateChart = $('#gateChart').ganttView(gateData, gateOptions);
+    var checkinChart = $('#checkinChart').ganttView(checkinData, commonOptions('柜台', '航司/航班'));
+    var beltChart = $('#beltChart').ganttView(beltData, commonOptions('转盘', '到达航班'));
+</script>
+</body>
+</html>
