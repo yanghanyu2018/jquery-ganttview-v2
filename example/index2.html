@@ -13,6 +13,16 @@
 	<script src="../gantt-view-v2.js"></script>
 </head>
 <body>
+<p class="language-toolbar">
+	<label>Language / 语种：</label>
+	<select id="localeSelect" onchange="switchGanttLocale(this.value)">
+		<option value="zh-CN">中文</option>
+		<option value="en-US">English</option>
+		<option value="fr-FR">Français</option>
+		<option value="de-DE">Deutsch</option>
+		<option value="th-TH">ไทย</option>
+	</select>
+</p>
 <p>
 	<button onclick="refreshMyGanttChart()">刷新甘特图(day模式)</button>
 	<button onclick="gotoCurrentTimeRange()">定位当前时间范围</button>
@@ -31,6 +41,30 @@
 </div>
 </body>
 <script>
+	var currentLocale = 'zh-CN';
+
+	function demoLabels(locale) {
+		var map = {
+			'zh-CN': { gate: '机位', flight: '航班' },
+			'en-US': { gate: 'Gate', flight: 'Flight' },
+			'fr-FR': { gate: 'Porte', flight: 'Vol' },
+			'de-DE': { gate: 'Gate', flight: 'Flug' },
+			'th-TH': { gate: 'ประตู', flight: 'เที่ยวบิน' }
+		};
+		return map[locale] || map['zh-CN'];
+	}
+
+	function switchGanttLocale(locale) {
+		currentLocale = locale || 'zh-CN';
+		var labels = demoLabels(currentLocale);
+		if (gantt && gantt.ganttView) {
+			gantt.ganttView.reloadGantts(null, { locale: currentLocale, vtHeaderName: labels.gate, vtHeaderSubName: labels.flight, preserveScrollOnReload: true });
+		}
+		if (gantt2 && gantt2.ganttView) {
+			gantt2.ganttView.reloadGantts(null, { locale: currentLocale, vtHeaderName: labels.gate, vtHeaderSubName: labels.flight, preserveScrollOnReload: true });
+		}
+	}
+
 	var ganttData = [
 		{
 			cId: 1, cName: "机位1",
@@ -84,6 +118,7 @@
 
 	var gantt = $("#ganttChart").ganttView(ganttData, {
 		viewMode: "day",
+		locale: currentLocale,
 		baseToday: true, // 到当前日期为止
 		showWeekends: true,
 		showNowTimeline: true,
@@ -92,8 +127,8 @@
 		highlightConflicts: true,
 		preserveScrollOnReload: false,
 		multiGantt: true,
-		vtHeaderName: "机位",
-		vtHeaderSubName: "航班",
+		vtHeaderName: demoLabels(currentLocale).gate,
+		vtHeaderSubName: demoLabels(currentLocale).flight,
 		gridHoverV: true,
 		gridHoverH: false,
 		behavior: {
@@ -173,6 +208,7 @@
 
 	var gantt2 = $("#ganttChart2").ganttView(ganttData2, {
 		viewMode: "hour",
+		locale: currentLocale,
 		baseToday: false, // 到当前日期为止
 		showWeekends: true,
 		showNowTimeline: true,
@@ -181,8 +217,8 @@
 		highlightConflicts: true,
 		preserveScrollOnReload: false,
 		multiGantt: true,
-		vtHeaderName: "机位",
-		vtHeaderSubName: "航班",
+		vtHeaderName: demoLabels(currentLocale).gate,
+		vtHeaderSubName: demoLabels(currentLocale).flight,
 		cellWidth: 60,
 		gridHoverV: true,
 		gridHoverH: false,

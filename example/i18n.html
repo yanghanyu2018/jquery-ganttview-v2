@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../lib/jquery-ui-1.13.0.css" />
+    <link rel="stylesheet" type="text/css" href="../gantt-view-v2.css" />
+    <title>GanttView i18n Demo</title>
+    <style>
+        body { font-family: Arial, "Microsoft YaHei", sans-serif; margin: 20px; color: #333; }
+        .toolbar { margin: 10px 0 16px; }
+        .toolbar select, .toolbar button { margin-right: 8px; padding: 4px 8px; }
+    </style>
+    <script src="./js/jquery.min.js"></script>
+    <script src="../lib/jquery-ui-1.13.0.js"></script>
+    <script src="../gantt-view-v2.js"></script>
+</head>
+<body>
+<h1>GanttView 多语种示例 / i18n Demo</h1>
+<div class="toolbar">
+    <label>Language / 语种：</label>
+    <select id="localeSelect" onchange="switchLocale(this.value)">
+        <option value="zh-CN">中文</option>
+        <option value="en-US">English</option>
+        <option value="fr-FR">Français</option>
+        <option value="de-DE">Deutsch</option>
+        <option value="th-TH">ไทย</option>
+    </select>
+    <button onclick="chart.ganttView.gotoNow('center')">Goto now / 定位当前时间</button>
+</div>
+<div id="chart"></div>
+
+<script>
+    var currentLocale = 'zh-CN';
+
+    function at(hour, minute, dayOffset) {
+        var d = new Date();
+        d.setDate(d.getDate() + (dayOffset || 0));
+        d.setHours(hour, minute || 0, 0, 0);
+        return d;
+    }
+
+    function labels(locale) {
+        var map = {
+            'zh-CN': { resource: '机位', task: '航班' },
+            'en-US': { resource: 'Gate', task: 'Flight' },
+            'fr-FR': { resource: 'Porte', task: 'Vol' },
+            'de-DE': { resource: 'Gate', task: 'Flug' },
+            'th-TH': { resource: 'ประตู', task: 'เที่ยวบิน' }
+        };
+        return map[locale] || map['zh-CN'];
+    }
+
+    var data = [
+        { cId: 'GATE-A01', cName: 'A01', resourceType: 'gate', series: [
+            { sId: 'flight', sName: 'Flights', tasks: [
+                { tId: 'CA1208', sId: 'flight', tName: 'CA1208', isTask: true, status: 'planned', start: at(8, 30), end: at(10, 0) },
+                { tId: 'MU3301', sId: 'flight', tName: 'MU3301', isTask: true, status: 'delayed', start: at(9, 40), end: at(11, 10) }
+            ]}
+        ]},
+        { cId: 'GATE-A02', cName: 'A02', resourceType: 'gate', series: [
+            { sId: 'flight', sName: 'Flights', tasks: [
+                { tId: 'CZ8802', sId: 'flight', tName: 'CZ8802', isTask: true, status: 'active', start: at(11, 0), end: at(12, 20) }
+            ]}
+        ]}
+    ];
+
+    var chart = $('#chart').ganttView(data, {
+        locale: currentLocale,
+        viewMode: 'hour',
+        visibleStart: at(6, 0),
+        visibleEnd: at(18, 0),
+        multiGantt: true,
+        vtHeaderName: labels(currentLocale).resource,
+        vtHeaderSubName: labels(currentLocale).task,
+        showNowTimeline: true,
+        showLegend: true,
+        highlightConflicts: true,
+        allowTimeMove: true,
+        allowResourceMove: true,
+        allowTimeResize: true,
+        timeSnapMinutes: 15,
+        cellWidth: 56
+    });
+
+    function switchLocale(locale) {
+        currentLocale = locale || 'zh-CN';
+        var l = labels(currentLocale);
+        chart.ganttView.reloadGantts(null, {
+            locale: currentLocale,
+            vtHeaderName: l.resource,
+            vtHeaderSubName: l.task,
+            preserveScrollOnReload: true
+        });
+    }
+</script>
+</body>
+</html>

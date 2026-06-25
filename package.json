@@ -1,0 +1,17 @@
+{
+  "name": "jquery-ganttview-v2-airport-resource-timeline",
+  "version": "0.6.7",
+  "description": "Lightweight HTML/CSS jQuery GanttView enhanced for airport resource timeline visualization.",
+  "main": "gantt-view-v2.js",
+  "style": "gantt-view-v2.css",
+  "keywords": [
+    "jquery",
+    "gantt",
+    "timeline",
+    "airport",
+    "resource",
+    "html",
+    "css"
+  ],
+  "license": "MIT"
+}
